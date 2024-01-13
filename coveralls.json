@@ -1,0 +1,6 @@
+{
+  "coverage_options": {
+    "minimum_coverage": 70.0
+  },
+  "skip_files": ["lib/invoice_app_web/components/core_components.ex"]
+}

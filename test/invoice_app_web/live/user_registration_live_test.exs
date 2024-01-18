@@ -8,7 +8,8 @@ defmodule InvoiceAppWeb.UserRegistrationLiveTest do
     test "renders registration page", %{conn: conn} do
       {:ok, _lv, html} = live(conn, ~p"/users/register")
 
-      assert html =~ "Register"
+      assert html =~ "Create an account"
+      assert html =~ "Begin creating invoices for free!"
       assert html =~ "Log in"
     end
 
@@ -30,7 +31,7 @@ defmodule InvoiceAppWeb.UserRegistrationLiveTest do
         |> element("#registration_form")
         |> render_change(user: %{"email" => "with spaces", "password" => "too short"})
 
-      assert result =~ "Register"
+      assert result =~ "Create an account"
       assert result =~ "must have the @ sign and no spaces"
       assert result =~ "should be at least 12 character"
     end
@@ -69,6 +70,25 @@ defmodule InvoiceAppWeb.UserRegistrationLiveTest do
 
       assert result =~ "has already been taken"
     end
+
+    test "renders errors for duplicated username", %{conn: conn} do
+      {:ok, lv, _html} = live(conn, ~p"/users/register")
+
+      user = user_fixture(%{username: "lgmfred"})
+
+      result =
+        lv
+        |> form("#registration_form",
+          user: %{
+            "email" => "lgmfred@ayikoyo.com",
+            "username" => user.username,
+            "password" => "very_valid_password!"
+          }
+        )
+        |> render_submit()
+
+      assert result =~ "has already been taken"
+    end
   end
 
   describe "registration navigation" do
@@ -77,7 +97,7 @@ defmodule InvoiceAppWeb.UserRegistrationLiveTest do
 
       {:ok, _login_live, login_html} =
         lv
-        |> element(~s|main a:fl-contains("Sign in")|)
+        |> element(~s|main a:fl-contains("Log in")|)
         |> render_click()
         |> follow_redirect(conn, ~p"/users/log_in")
 

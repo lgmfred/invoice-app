@@ -5,10 +5,15 @@ defmodule InvoiceApp.Accounts.User do
   import Ecto.Changeset
 
   schema "users" do
+    field :full_name, :string
+    field :username, :string
     field :email, :string
+    field :avatar_url, :string
     field :password, :string, virtual: true, redact: true
     field :hashed_password, :string, redact: true
     field :confirmed_at, :naive_datetime
+
+    embeds_one :business_address, InvoiceApp.Accounts.BusinessAddress
 
     timestamps(type: :utc_datetime)
   end
@@ -38,9 +43,13 @@ defmodule InvoiceApp.Accounts.User do
   """
   def registration_changeset(user, attrs, opts \\ []) do
     user
-    |> cast(attrs, [:email, :password])
+    |> cast(attrs, [:email, :password, :full_name, :username, :avatar_url])
+    |> cast_embed(:business_address)
     |> validate_email(opts)
     |> validate_password(opts)
+    |> validate_username(opts)
+    |> validate_required([:full_name])
+    |> unique_constraint(:username)
   end
 
   defp validate_email(changeset, opts) do
@@ -49,6 +58,12 @@ defmodule InvoiceApp.Accounts.User do
     |> validate_format(:email, ~r/^[^\s]+@[^\s]+$/, message: "must have the @ sign and no spaces")
     |> validate_length(:email, max: 160)
     |> maybe_validate_unique_email(opts)
+  end
+
+  defp validate_username(changeset, opts) do
+    changeset
+    |> validate_required(:username)
+    |> maybe_validate_unique_username(opts)
   end
 
   defp validate_password(changeset, opts) do
@@ -84,6 +99,16 @@ defmodule InvoiceApp.Accounts.User do
       changeset
       |> unsafe_validate_unique(:email, InvoiceApp.Repo)
       |> unique_constraint(:email)
+    else
+      changeset
+    end
+  end
+
+  defp maybe_validate_unique_username(changeset, opts) do
+    if Keyword.get(opts, :validate_username, true) do
+      changeset
+      |> unsafe_validate_unique(:username, InvoiceApp.Repo)
+      |> unique_constraint(:username)
     else
       changeset
     end

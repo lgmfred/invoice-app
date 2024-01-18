@@ -6,17 +6,11 @@ defmodule InvoiceAppWeb.UserRegistrationLive do
 
   def render(assigns) do
     ~H"""
-    <div class="mx-auto max-w-sm">
-      <.header class="text-center">
-        Register for an account
-        <:subtitle>
-          Already registered?
-          <.link navigate={~p"/users/log_in"} class="font-semibold text-brand hover:underline">
-            Sign in
-          </.link>
-          to your account now.
-        </:subtitle>
-      </.header>
+    <div class="mx-5 max-w-sm flex flex-col gap-2">
+      <header class="text-center">
+        <h1 class="text-3xl font-bold">Create an account</h1>
+        <p class="text-base">Begin creating invoices for free!</p>
+      </header>
 
       <.simple_form
         for={@form}
@@ -26,18 +20,29 @@ defmodule InvoiceAppWeb.UserRegistrationLive do
         phx-trigger-action={@trigger_submit}
         action={~p"/users/log_in?_action=registered"}
         method="post"
+        class="m-0"
       >
         <.error :if={@check_errors}>
           Oops, something went wrong! Please check the errors below.
         </.error>
 
-        <.input field={@form[:email]} type="email" label="Email" required />
-        <.input field={@form[:password]} type="password" label="Password" required />
+        <.input field={@form[:full_name]} type="text" placeholder="Enter Your Name" required />
+        <.input field={@form[:username]} type="text" placeholder="Enter Your Username" required />
+        <.input field={@form[:email]} type="email" placeholder="Enter Your Email Address" required />
+        <.input field={@form[:password]} type="password" placeholder="Enter Your Password" required />
+        <.input field={@form[:avatar_url]} type="hidden" />
 
         <:actions>
-          <.button phx-disable-with="Creating account..." class="w-full">Create an account</.button>
+          <.button phx-disable-with="Signing up..." class="w-full bg-[#7C5DFA]">Sign Up</.button>
         </:actions>
       </.simple_form>
+
+      <p class="text-xl text-center">
+        Already have an account?
+        <.link navigate={~p"/users/log_in"} class=" text-[#7C5DFA] hover:underline">
+          Log in
+        </.link>
+      </p>
     </div>
     """
   end

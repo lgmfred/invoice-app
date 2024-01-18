@@ -4,13 +4,30 @@ defmodule InvoiceApp.AccountsFixtures do
   entities via the `InvoiceApp.Accounts` context.
   """
 
+  alias Faker.Address
+  alias Faker.Person.Fr
+  alias Faker.Phone.PtPt
+
   def unique_user_email, do: "user#{System.unique_integer()}@example.com"
+  def unique_username, do: "username#{System.unique_integer()}"
   def valid_user_password, do: "hello world!"
+
+  def valid_address_attributes(attrs \\ %{}) do
+    Enum.into(attrs, %{
+      country: Address.country(),
+      city: Address.city(),
+      street_address: Address.street_address(true),
+      postal_code: Address.postcode(),
+      phone_number: "0#{PtPt.number()}"
+    })
+  end
 
   def valid_user_attributes(attrs \\ %{}) do
     Enum.into(attrs, %{
       email: unique_user_email(),
-      password: valid_user_password()
+      password: valid_user_password(),
+      full_name: Fr.name(),
+      username: unique_username()
     })
   end
 

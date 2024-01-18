@@ -1,6 +1,6 @@
 {
   "coverage_options": {
-    "minimum_coverage": 85
+    "minimum_coverage": 90
   },
   "skip_files": [
     "lib/invoice_app.ex",

@@ -1,5 +1,7 @@
 # InvoiceApp
 
+![Elixir CI](https://github.com/lgmfred/invoice-app/actions/workflows/ci.yaml/badge.svg)
+
 To start your Phoenix server:
 
 - Run `mix setup` to install and setup dependencies

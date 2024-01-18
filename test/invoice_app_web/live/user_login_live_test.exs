@@ -10,7 +10,7 @@ defmodule InvoiceAppWeb.UserLoginLiveTest do
 
       assert html =~ "Log in"
       assert html =~ "Register"
-      assert html =~ "Forgot your password?"
+      assert html =~ "Forgot Password?"
     end
 
     test "redirects if already logged in", %{conn: conn} do
@@ -77,7 +77,7 @@ defmodule InvoiceAppWeb.UserLoginLiveTest do
 
       {:ok, conn} =
         lv
-        |> element(~s|main a:fl-contains("Forgot your password?")|)
+        |> element(~s|main a:fl-contains("Forgot Password?")|)
         |> render_click()
         |> follow_redirect(conn, ~p"/users/reset_password")
 

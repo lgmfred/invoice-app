@@ -26,10 +26,11 @@ defmodule InvoiceAppWeb.UserRegistrationLive do
           Oops, something went wrong! Please check the errors below.
         </.error>
 
-        <.input field={@form[:name]} type="text" placeholder="Enter Your Name" required />
+        <.input field={@form[:full_name]} type="text" placeholder="Enter Your Name" required />
         <.input field={@form[:username]} type="text" placeholder="Enter Your Username" required />
         <.input field={@form[:email]} type="email" placeholder="Enter Your Email Address" required />
         <.input field={@form[:password]} type="password" placeholder="Enter Your Password" required />
+        <.input field={@form[:avatar_url]} type="hidden" />
 
         <:actions>
           <.button phx-disable-with="Signing up..." class="w-full bg-[#7C5DFA]">Sign Up</.button>
@@ -39,7 +40,7 @@ defmodule InvoiceAppWeb.UserRegistrationLive do
       <p class="text-xl text-center">
         Already have an account?
         <.link navigate={~p"/users/log_in"} class=" text-[#7C5DFA] hover:underline">
-          Login
+          Log in
         </.link>
       </p>
     </div>

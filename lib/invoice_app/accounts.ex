@@ -215,6 +215,15 @@ defmodule InvoiceApp.Accounts do
     end
   end
 
+  @doc """
+  Update other user information
+  """
+  def update_user(user, attrs) do
+    user
+    |> User.update_user_changeset(attrs)
+    |> Repo.update()
+  end
+
   ## Session
 
   @doc """

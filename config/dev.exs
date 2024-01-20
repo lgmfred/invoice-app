@@ -56,7 +56,7 @@ config :invoice_app, InvoiceAppWeb.Endpoint,
 config :invoice_app, InvoiceAppWeb.Endpoint,
   live_reload: [
     patterns: [
-      ~r"priv/static/.*(js|css|png|jpeg|jpg|gif|svg)$",
+      ~r"priv/static/(?!uploads).*(js|css|png|jpeg|jpg|gif|svg)$",
       ~r"priv/gettext/.*(po)$",
       ~r"lib/invoice_app_web/(controllers|live|components)/.*(ex|heex)$"
     ]

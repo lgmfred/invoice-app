@@ -1,6 +1,8 @@
 defmodule InvoiceAppWeb.UserAddAvatarLive do
   use InvoiceAppWeb, :live_view
 
+  alias InvoiceApp.Accounts
+
   @impl Phoenix.LiveView
   def mount(_params, _session, socket) do
     socket =
@@ -33,9 +35,8 @@ defmodule InvoiceAppWeb.UserAddAvatarLive do
         <p class="text-xl font-light text-[#979797]">Just a few more steps...</p>
       </div>
       <div>
-        <%= inspect(@current_user) %>
         <h3 class="text-xl font-semibold text-[#000000]">Add an avatar</h3>
-
+        <img src={@current_user.avatar_url} alt="My Avatar" />
         <form id="upload-form" phx-submit="upload" phx-change="validate">
           <.live_file_input upload={@uploads.avatar} />
           <button type="submit">Upload</button>
@@ -49,10 +50,8 @@ defmodule InvoiceAppWeb.UserAddAvatarLive do
                   <.live_img_preview entry={entry} />
                   <figcaption><%= entry.client_name %></figcaption>
                 </figure>
-
                 <%!-- entry.progress will update automatically for in-flight entries --%>
                 <progress value={entry.progress} max="100"><%= entry.progress %>%</progress>
-
                 <%!-- a regular click event whose handler will invoke Phoenix.LiveView.cancel_upload/3 --%>
                 <button
                   type="button"
@@ -62,14 +61,12 @@ defmodule InvoiceAppWeb.UserAddAvatarLive do
                 >
                   &times;
                 </button>
-
                 <%!-- Phoenix.Component.upload_errors/2 returns a list of error atoms --%>
                 <%= for err <- upload_errors(@uploads.avatar, entry) do %>
                   <p class="alert alert-danger"><%= error_to_string(err) %></p>
                 <% end %>
               </article>
             <% end %>
-
             <%!-- Phoenix.Component.upload_errors/1 returns a list of error atoms --%>
             <%= for err <- upload_errors(@uploads.avatar) do %>
               <p class="alert alert-danger"><%= error_to_string(err) %></p>
@@ -110,9 +107,19 @@ defmodule InvoiceAppWeb.UserAddAvatarLive do
         {:ok, avatar_url_path}
       end)
 
-    _attrs = %{avatar_url: hd(avatar_locations)}
+    attrs = %{avatar_url: hd(avatar_locations)}
+    old_avatar = socket.assigns.current_user.avatar_url
 
-    {:noreply, socket}
+    case Accounts.update_user(socket.assigns.current_user, attrs) do
+      {:ok, user} ->
+        Path.join(["priv", "static", old_avatar])
+        |> File.rm!()
+
+        {:noreply, assign(socket, current_user: user)}
+
+      {:error, %Ecto.Changeset{} = _changeset} ->
+        {:noreply, socket}
+    end
   end
 
   def error_to_string(:too_large), do: "Too large"

@@ -52,6 +52,19 @@ defmodule InvoiceApp.Accounts.User do
     |> unique_constraint(:username)
   end
 
+  @doc """
+  A user changeset for registration.
+  """
+  def update_user_changeset(user, attrs, opts \\ []) do
+    user
+    |> cast(attrs, [:email, :password, :full_name, :username, :avatar_url])
+    |> cast_embed(:business_address)
+    |> validate_email(opts)
+    |> validate_username(opts)
+    |> validate_required([:full_name])
+    |> unique_constraint(:username)
+  end
+
   defp validate_email(changeset, opts) do
     changeset
     |> validate_required([:email])

@@ -1,10 +1,7 @@
-<.flash_group flash={@flash} />
-<div class="left-[40rem] fixed inset-y-0 right-0 z-0 hidden lg:block xl:left-[50rem]">
-  Home page image
-</div>
-<div class=" flex flex-col gap-4 px-20 py-10 sm:px-6 sm:py-28 lg:px-8 xl:px-28 xl:py-32">
-  <div class="flex gap-4 items-center justify-between">
-    <svg class="w-20 h-20" viewBox="0 0 85 80" fill="none" xmlns="http://www.w3.org/2000/svg">
+<%!-- <.flash_group flash={@flash} /> --%>
+<div class="w-5/6 flex flex-col gap-8 justify-center items-center">
+  <div class="max-w-[410px] md:mt-8 lg:mt-0 flex justify-around items-center ">
+    <svg class="w-1/3" viewBox="0 0 85 80" fill="none" xmlns="http://www.w3.org/2000/svg">
       <path
         fill-rule="evenodd"
         clip-rule="evenodd"
@@ -12,14 +9,19 @@
         fill="#7C5DFA"
       />
     </svg>
-    <h1 class="text-[#7C5DFA] font-semibold text-5xl">Invoice</h1>
+    <h1 class="w-2/3 text-[#7C5DFA] font-semibold text-6xl md:text-8xl lg:text-6xl">Invoice</h1>
   </div>
-  <h2 class="font-medium text-3xl text-[#0C0E16]">Sign in to Invoice</h2>
+  <h2 class="font-medium text-3xl md:text-6xl lg:text-3xl text-[#0C0E16]">Sign in to Invoice</h2>
   <a
     href="#"
-    class="border rounded-full py-2 px-6 flex justify-center items-center gap-2 text-[#3F445F]"
+    class="w-full border rounded-full py-2 px-6 flex justify-center items-center gap-2 text-xl md:text-4xl lg:text-xl text-[#3F445F]"
   >
-    <svg class="w-6 h-6" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 25 24" fill="none">
+    <svg
+      class="w-6 md:w-12 lg:w-6 h-6 md:h-12 lg:h-6"
+      xmlns="http://www.w3.org/2000/svg"
+      viewBox="0 0 25 24"
+      fill="none"
+    >
       <path
         d="M22.3055 10.0415H21.5V10H12.5V14H18.1515C17.327 16.3285 15.1115 18 12.5 18C9.1865 18 6.5 15.3135 6.5 12C6.5 8.6865 9.1865 6 12.5 6C14.0295 6 15.421 6.577 16.4805 7.5195L19.309 4.691C17.523 3.0265 15.134 2 12.5 2C6.9775 2 2.5 6.4775 2.5 12C2.5 17.5225 6.9775 22 12.5 22C18.0225 22 22.5 17.5225 22.5 12C22.5 11.3295 22.431 10.675 22.3055 10.0415Z"
         fill="#FFC107"
@@ -41,22 +43,29 @@
   </a>
   <a
     href="/users/log_in"
-    class="border rounded-full py-2 px-6 flex justify-center items-center gap-2 text-[#3F445F]"
+    class="w-full border rounded-full py-2 px-6 flex justify-center items-center gap-2 text-xl md:text-4xl lg:text-xl text-[#3F445F]"
   >
-    <svg class="w-6 h-6" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none">
+    <svg
+      class="w-6 md:w-12 lg:w-6 h-6 md:h-12 lg:h-6"
+      xmlns="http://www.w3.org/2000/svg"
+      viewBox="0 0 24 24"
+      fill="none"
+    >
       <path
         d="M4 20C3.45 20 2.97933 19.8043 2.588 19.413C2.19667 19.0217 2.00067 18.5507 2 18V6C2 5.45 2.196 4.97933 2.588 4.588C2.98 4.19667 3.45067 4.00067 4 4H20C20.55 4 21.021 4.196 21.413 4.588C21.805 4.98 22.0007 5.45067 22 6V18C22 18.55 21.8043 19.021 21.413 19.413C21.0217 19.805 20.5507 20.0007 20 20H4ZM12 13L4 8V18H20V8L12 13ZM12 11L20 6H4L12 11ZM4 8V6V18V8Z"
         fill="#3F445F"
       />
     </svg>
-    <p class="">Continue with email</p>
+    <p>Continue with email</p>
   </a>
-  <div class="text-[#888EB0]">
-    By creating an account, you agree to Invoice company’s
+  <%!-- <div class="flex flex-col gap-4  "> --%>
+  <div class="mx-4 md:mx-20 lg:mx-4 text-base md:text-3xl lg:text-base text-[#888EB0]">
+    By creating an account, you agree to Invoice company’s <br />
     <a href="#" class="font-semibold">Terms of use</a>
     and <a href="#" class="font-semibold">Privacy Policy.</a>
   </div>
-  <div class="text-[#3F445F]">
+  <div class="text-base md:mb-8 lg:text-base md:text-2xl text-[#3F445F]">
     Don't have an account? <a href="/users/register" class="text-[#7C5DFA]">Sign up</a>
   </div>
+  <%!-- </div> --%>
 </div>

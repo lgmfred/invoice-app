@@ -11,8 +11,8 @@
     <script defer phx-track-static type="text/javascript" src={~p"/assets/app.js"}>
     </script>
   </head>
-  <body class="bg-white antialiased text-center">
-    <ul class="relative z-10 flex items-center gap-4 px-4 sm:px-6 lg:px-8 justify-end">
+  <body class=" bg-white antialiased text-center flex flex-col lg:flex-row place-content-center">
+    <%!-- <ul class="relative z-10 flex items-center gap-4 px-4 sm:px-6 lg:px-8 justify-end">
       <%= if @current_user do %>
         <li class="text-[0.8125rem] leading-6 text-zinc-900">
           <%= @current_user.email %>
@@ -52,7 +52,12 @@
           </.link>
         </li>
       <% end %>
-    </ul>
-    <%= @inner_content %>
+    </ul> --%>
+    <div class="hidden  lg:flex lg:basis-[46%]">
+      <img class="w-full h-screen" src="/images/desktop-cover.png" alt="" />
+    </div>
+    <div class="h-screen flex justify-center items-center lg:basis-[54%]">
+      <%= @inner_content %>
+    </div>
   </body>
 </html>

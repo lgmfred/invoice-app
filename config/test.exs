@@ -34,3 +34,7 @@ config :logger, level: :warning
 
 # Initialize plugs at runtime for faster test compilation
 config :phoenix, :plug_init_mode, :runtime
+
+# Define uploads directory only for tests so we can clean after tests
+config :invoice_app, :public_uploads_path, "/uploads/test"
+config :invoice_app, :uploads_dir, "priv/static/uploads/test"

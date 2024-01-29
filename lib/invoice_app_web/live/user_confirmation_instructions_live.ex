@@ -3,59 +3,39 @@ defmodule InvoiceAppWeb.UserConfirmationInstructionsLive do
 
   alias InvoiceApp.Accounts
 
+  def mount(_params, _session, socket) do
+    {:ok, assign(socket, form: to_form(%{}, as: "user"))}
+  end
+
+  def handle_params(%{"email" => email}, _uri, socket) do
+    case Accounts.get_user_by_email(email) do
+      %{email: ^email, confirmed_at: nil} = _user ->
+        {:noreply, assign(socket, email: email)}
+
+      _user_or_nil ->
+        {:noreply, push_patch(socket, to: ~p"/users/confirm")}
+    end
+  end
+
+  def handle_params(_params, _uri, socket) do
+    {:noreply, assign(socket, email: nil)}
+  end
+
   def render(assigns) do
     ~H"""
     <div class="min-h-screen">
       <%= if @current_user do %>
-        <%= if @current_user.confirmed_at do %>
-          <div class="flex flex-col gap-4 py-8 px-16 text-left rounded-xl bg-[#7C5DFA33]">
-            <.header class="">
-              You've already confirmed your Email Address.
-            </.header>
-          </div>
-        <% else %>
-          <div class="flex flex-col gap-4 py-8 px-16 text-left rounded-xl bg-[#7C5DFA33]">
-            <.header class="">
-              Confirm your Email  Address.
-            </.header>
-            <p>
-              We've sent a confirmation email to <span class="font-bold"><%= @current_user.email %></span>.
-              Please follow the link in the message to confirm your email address.
-              If you did not receive the email, please check your spam folder or:
-            </p>
-            <.simple_form for={@form} id="resend_confirmation_form" phx-submit="send_instructions">
-              <.button phx-disable-with="Sending..." class="w-full">
-                Resend confirmation instructions
-              </.button>
-            </.simple_form>
-          </div>
-        <% end %>
+        <div class="flex flex-col gap-4 py-8 px-16 text-left rounded-xl bg-[#7C5DFA33]">
+          <.header class="">
+            You've already confirmed your Email Address.
+          </.header>
+        </div>
       <% else %>
-        <.header class="text-center">
-          No confirmation instructions received?
-          <:subtitle>We'll send a new confirmation link to your inbox</:subtitle>
-        </.header>
-
-        <.simple_form for={@form} id="resend_confirmation_form" phx-submit="send_instructions">
-          <.input field={@form[:email]} type="email" placeholder="Email" required />
-          <:actions>
-            <.button phx-disable-with="Sending..." class="w-full">
-              Resend confirmation instructions
-            </.button>
-          </:actions>
-        </.simple_form>
-
-        <p class="text-center mt-4">
-          <.link href={~p"/users/register"}>Register</.link>
-          | <.link href={~p"/users/log_in"}>Log in</.link>
-        </p>
+        <.confirm_instruction :if={@email} form={@form} email={@email} />
+        <.confirm_email_form :if={!@email} form={@form} />
       <% end %>
     </div>
     """
-  end
-
-  def mount(_params, _session, socket) do
-    {:ok, assign(socket, form: to_form(%{}, as: "user"))}
   end
 
   def handle_event("send_instructions", %{"user" => %{"email" => email}}, socket) do
@@ -76,9 +56,7 @@ defmodule InvoiceAppWeb.UserConfirmationInstructionsLive do
   end
 
   def handle_event("send_instructions", _params, socket) do
-    email = socket.assigns.current_user.email
-
-    if user = Accounts.get_user_by_email(email) do
+    if user = Accounts.get_user_by_email(socket.assigns.email) do
       Accounts.deliver_user_confirmation_instructions(
         user,
         &url(~p"/users/confirm/#{&1}")
@@ -92,5 +70,51 @@ defmodule InvoiceAppWeb.UserConfirmationInstructionsLive do
      socket
      |> put_flash(:info, info)
      |> redirect(to: ~p"/")}
+  end
+
+  defp confirm_instruction(assigns) do
+    ~H"""
+    <div class="flex flex-col gap-4 py-8 px-16 text-left rounded-xl bg-[#7C5DFA33]">
+      <.header class="">
+        Confirm Your Email Address.
+      </.header>
+
+      <p>
+        We've sent a confirmation email to <span class="font-bold"><%= @email %></span>.
+        Please follow the link in the message to confirm your email address.
+        If you did not receive the email, please check your spam folder or:
+      </p>
+      <.simple_form for={@form} id="resend_confirmation_form" phx-submit="send_instructions">
+        <.button phx-disable-with="Sending..." class="w-full">
+          Resend confirmation instructions
+        </.button>
+      </.simple_form>
+    </div>
+    """
+  end
+
+  defp confirm_email_form(assigns) do
+    ~H"""
+    <div>
+      <.header class="text-center">
+        No confirmation instructions received?
+        <:subtitle>We'll send a new confirmation link to your inbox</:subtitle>
+      </.header>
+
+      <.simple_form for={@form} id="resend_confirmation_form" phx-submit="send_instructions">
+        <.input field={@form[:email]} type="email" placeholder="Email" required />
+        <:actions>
+          <.button phx-disable-with="Sending..." class="w-full">
+            Resend confirmation instructions
+          </.button>
+        </:actions>
+      </.simple_form>
+
+      <p class="text-center mt-4">
+        <.link href={~p"/users/register"}>Register</.link>
+        | <.link href={~p"/users/log_in"}>Log in</.link>
+      </p>
+    </div>
+    """
   end
 end

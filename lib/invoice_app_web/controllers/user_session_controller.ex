@@ -4,10 +4,6 @@ defmodule InvoiceAppWeb.UserSessionController do
   alias InvoiceApp.Accounts
   alias InvoiceAppWeb.UserAuth
 
-  def create(conn, %{"_action" => "registered"} = params) do
-    create(conn, params, "Account created successfully!")
-  end
-
   def create(conn, %{"_action" => "password_updated"} = params) do
     conn
     |> put_session(:user_return_to, ~p"/users/settings")

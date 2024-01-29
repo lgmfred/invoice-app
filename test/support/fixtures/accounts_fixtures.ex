@@ -7,14 +7,15 @@ defmodule InvoiceApp.AccountsFixtures do
   alias Faker.Address
   alias Faker.Person.Fr
   alias Faker.Phone.PtPt
+  alias InvoiceApp.Accounts
 
   def unique_user_email, do: "user#{System.unique_integer()}@example.com"
   def unique_username, do: "username#{System.unique_integer()}"
-  def valid_user_password, do: "hello world!"
+  def valid_user_password, do: "Hello 2 world!"
 
   def valid_address_attributes(attrs \\ %{}) do
     Enum.into(attrs, %{
-      country: Address.country(),
+      country: Address.country_code(),
       city: Address.city(),
       street_address: Address.street_address(true),
       postal_code: Address.postcode(),
@@ -35,7 +36,7 @@ defmodule InvoiceApp.AccountsFixtures do
     {:ok, user} =
       attrs
       |> valid_user_attributes()
-      |> InvoiceApp.Accounts.register_user()
+      |> Accounts.register_user()
 
     user
   end
@@ -44,5 +45,13 @@ defmodule InvoiceApp.AccountsFixtures do
     {:ok, captured_email} = fun.(&"[TOKEN]#{&1}[TOKEN]")
     [_, token | _] = String.split(captured_email.text_body, "[TOKEN]")
     token
+  end
+
+  def confirm_email(user) do
+    {:ok, user} =
+      extract_user_token(fn url -> Accounts.deliver_user_confirmation_instructions(user, url) end)
+      |> Accounts.confirm_user()
+
+    user
   end
 end

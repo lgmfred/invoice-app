@@ -21,7 +21,7 @@ defmodule InvoiceAppWeb.UserForgotPasswordLiveTest do
         conn
         |> log_in_user(user_fixture())
         |> live(~p"/users/reset_password")
-        |> follow_redirect(conn, ~p"/")
+        |> follow_redirect(conn, ~p"/invoices")
 
       assert {:ok, _conn} = result
     end
@@ -29,7 +29,7 @@ defmodule InvoiceAppWeb.UserForgotPasswordLiveTest do
 
   describe "Reset link" do
     setup do
-      %{user: user_fixture()}
+      %{user: confirm_email(user_fixture())}
     end
 
     test "sends a new reset password token", %{conn: conn, user: user} do

@@ -31,8 +31,8 @@ defmodule InvoiceAppWeb.UserResetPasswordLive do
       </.simple_form>
 
       <p class="text-center text-sm mt-4">
-        <.link href={~p"/users/register"}>Register</.link>
-        | <.link href={~p"/users/log_in"}>Log in</.link>
+        <.link navigate={~p"/users/register"}>Register</.link>
+        | <.link navigate={~p"/users/log_in"}>Log in</.link>
       </p>
     </div>
     """
@@ -58,10 +58,12 @@ defmodule InvoiceAppWeb.UserResetPasswordLive do
   def handle_event("reset_password", %{"user" => user_params}, socket) do
     case Accounts.reset_user_password(socket.assigns.user, user_params) do
       {:ok, _} ->
-        {:noreply,
-         socket
-         |> put_flash(:info, "Password reset successfully.")
-         |> redirect(to: ~p"/users/log_in")}
+        {
+          :noreply,
+          socket
+          |> put_flash(:info, "Password reset successfully.")
+          |> redirect(to: ~p"/users/log_in")
+        }
 
       {:error, changeset} ->
         {:noreply, assign_form(socket, Map.put(changeset, :action, :insert))}
@@ -79,7 +81,7 @@ defmodule InvoiceAppWeb.UserResetPasswordLive do
     else
       socket
       |> put_flash(:error, "Reset password link is invalid or it has expired.")
-      |> redirect(to: ~p"/")
+      |> push_navigate(to: ~p"/")
     end
   end
 

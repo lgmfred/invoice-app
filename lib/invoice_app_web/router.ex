@@ -19,8 +19,6 @@ defmodule InvoiceAppWeb.Router do
 
   scope "/", InvoiceAppWeb do
     pipe_through :browser
-
-    get "/", PageController, :home
   end
 
   # Other scopes may use custom stacks.
@@ -52,6 +50,7 @@ defmodule InvoiceAppWeb.Router do
 
     live_session :redirect_if_user_is_authenticated,
       on_mount: [{InvoiceAppWeb.UserAuth, :redirect_if_user_is_authenticated}] do
+      get "/", PageController, :home
       live "/users/register", UserRegistrationLive, :new
       live "/users/log_in", UserLoginLive, :new
       live "/users/reset_password", UserForgotPasswordLive, :new
@@ -69,6 +68,8 @@ defmodule InvoiceAppWeb.Router do
       live "/users/settings", UserSettingsLive, :edit
       live "/users/settings/confirm_email/:token", UserSettingsLive, :confirm_email
       live "/users/add_avatar", UserAddAvatarLive
+      live "/users/add_address", AddBusinessAddressLive
+      live "/invoices", InvoicesLive
     end
   end
 

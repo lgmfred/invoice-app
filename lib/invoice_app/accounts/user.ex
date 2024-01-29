@@ -13,7 +13,7 @@ defmodule InvoiceApp.Accounts.User do
     field :hashed_password, :string, redact: true
     field :confirmed_at, :naive_datetime
 
-    embeds_one :business_address, InvoiceApp.Accounts.BusinessAddress
+    embeds_one :business_address, InvoiceApp.Accounts.BusinessAddress, on_replace: :update
 
     timestamps(type: :utc_datetime)
   end

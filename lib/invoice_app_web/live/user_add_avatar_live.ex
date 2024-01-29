@@ -34,48 +34,56 @@ defmodule InvoiceAppWeb.UserAddAvatarLive do
         <h2 class="text-2xl font-semibold text-[#000000]">Welcome! Let's create your profile</h2>
         <p class="text-xl font-light text-[#979797]">Just a few more steps...</p>
       </div>
-      <div>
-        <h3 class="text-xl font-semibold text-[#000000]">Add an avatar</h3>
-        <img src={@current_user.avatar_url} alt="My Avatar" />
-        <form id="upload-form" phx-submit="upload" phx-change="validate">
-          <.live_file_input upload={@uploads.avatar} />
-          <button type="submit">Upload</button>
+      <h3 class="justify-self-start text-xl font-semibold text-[#000000]">Add an avatar</h3>
+      <form
+        class="w-full grid grid-cols-2 gap-4 text-[#FFFFFF]"
+        id="upload-form"
+        phx-submit="upload"
+        phx-change="validate"
+      >
+        <img
+          :if={@uploads.avatar.entries == [] && @current_user.avatar_url}
+          class="w-24 h-24 rounded-full border-2 border-dashed "
+          src={@current_user.avatar_url}
+          alt="Avatar"
+        />
+        <div
+          :if={@uploads.avatar.entries == [] && !@current_user.avatar_url}
+          class="w-24 h-24 flex justify-center items-center border-2 border-dashed rounded-full"
+        >
+          <img src="/images/default_avatar.png" alt="Avatar" />
+        </div>
+        <%= for entry <- @uploads.avatar.entries do %>
+          <article :if={@uploads.avatar.entries != []}>
+            <.live_img_preview class="w-24 h-24 rounded-full outline-double" entry={entry} />
+          </article>
+        <% end %>
 
-          <%!-- use phx-drop-target with the upload ref to enable file drag and drop --%>
-          <section phx-drop-target={@uploads.avatar.ref}>
-            <%!-- render each avatar entry --%>
-            <%= for entry <- @uploads.avatar.entries do %>
-              <article class="upload-entry">
-                <figure>
-                  <.live_img_preview entry={entry} />
-                  <figcaption><%= entry.client_name %></figcaption>
-                </figure>
-                <%!-- entry.progress will update automatically for in-flight entries --%>
-                <progress value={entry.progress} max="100"><%= entry.progress %>%</progress>
-                <%!-- a regular click event whose handler will invoke Phoenix.LiveView.cancel_upload/3 --%>
-                <button
-                  type="button"
-                  phx-click="cancel-upload"
-                  phx-value-ref={entry.ref}
-                  aria-label="cancel"
-                >
-                  &times;
-                </button>
-                <%!-- Phoenix.Component.upload_errors/2 returns a list of error atoms --%>
-                <%= for err <- upload_errors(@uploads.avatar, entry) do %>
-                  <p class="alert alert-danger"><%= error_to_string(err) %></p>
-                <% end %>
-              </article>
-            <% end %>
-            <%!-- Phoenix.Component.upload_errors/1 returns a list of error atoms --%>
-            <%= for err <- upload_errors(@uploads.avatar) do %>
+        <label class="justify-self-start my-auto px-2 py-1 bg-[#7C5DFA] rounded-full font-semibold hover:cursor-pointer">
+          <.live_file_input class="hidden" upload={@uploads.avatar} />
+          <span>Choose Image</span>
+        </label>
+
+        <div class="col-span-2 text-[#E86969]">
+          <%= for entry <- @uploads.avatar.entries do %>
+            <%= for err <- upload_errors(@uploads.avatar, entry) do %>
               <p class="alert alert-danger"><%= error_to_string(err) %></p>
             <% end %>
-          </section>
-        </form>
-      </div>
-      <img src="/images/add_avatar_bottom.png" alt="" />
+          <% end %>
+          <%= for err <- upload_errors(@uploads.avatar) do %>
+            <p class="alert alert-danger"><%= error_to_string(err) %></p>
+          <% end %>
+        </div>
+
+        <button
+          class="col-start-2 col-end-2 my-auto justify-self-end px-10 py-2 bg-[#979797] rounded-full font-semibold"
+          type="submit"
+        >
+          Continue
+        </button>
+      </form>
     </div>
+    <img class="lg:hidden w-full h-full" src="/images/add_avatar_bottom.png" alt="" />
     """
   end
 
@@ -112,8 +120,10 @@ defmodule InvoiceAppWeb.UserAddAvatarLive do
 
     case Accounts.update_user(socket.assigns.current_user, attrs) do
       {:ok, user} ->
-        Path.join(["priv", "static", old_avatar])
-        |> File.rm!()
+        if !old_avatar do
+          Path.join(["priv", "static", old_avatar])
+          |> File.rm!()
+        end
 
         {:noreply, assign(socket, current_user: user)}
 

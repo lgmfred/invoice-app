@@ -69,6 +69,7 @@ defmodule InvoiceAppWeb.Router do
       live "/users/settings", UserSettingsLive, :edit
       live "/users/settings/confirm_email/:token", UserSettingsLive, :confirm_email
       live "/users/add_avatar", UserAddAvatarLive
+      live "/users/add_address", AddBusinessAddressLive
     end
   end
 

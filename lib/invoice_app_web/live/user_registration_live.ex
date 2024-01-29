@@ -3,6 +3,7 @@ defmodule InvoiceAppWeb.UserRegistrationLive do
 
   alias InvoiceApp.Accounts
   alias InvoiceApp.Accounts.User
+  alias InvoiceAppWeb.CustomComponents
 
   def render(assigns) do
     ~H"""
@@ -33,13 +34,15 @@ defmodule InvoiceAppWeb.UserRegistrationLive do
         <.input field={@form[:avatar_url]} type="hidden" />
 
         <:actions>
-          <.button phx-disable-with="Signing up..." class="w-full bg-[#7C5DFA]">Sign Up</.button>
+          <CustomComponents.button phx-disable-with="Signing up..." class="w-full bg-[#7C5DFA]">
+            Sign Up
+          </CustomComponents.button>
         </:actions>
       </.simple_form>
 
       <p class="text-xl text-center">
         Already have an account?
-        <.link navigate={~p"/users/log_in"} class=" text-[#7C5DFA] hover:underline">
+        <.link navigate={~p"/users/log_in"} class="text-[#7C5DFA] hover:underline">
           Log in
         </.link>
       </p>

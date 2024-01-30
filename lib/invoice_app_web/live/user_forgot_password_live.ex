@@ -20,8 +20,8 @@ defmodule InvoiceAppWeb.UserForgotPasswordLive do
         </:actions>
       </.simple_form>
       <p class="text-center text-sm mt-4">
-        <.link href={~p"/users/register"}>Register</.link>
-        | <.link href={~p"/users/log_in"}>Log in</.link>
+        <.link navigate={~p"/users/register"}>Register</.link>
+        | <.link navigate={~p"/users/log_in"}>Log in</.link>
       </p>
     </div>
     """
@@ -45,6 +45,6 @@ defmodule InvoiceAppWeb.UserForgotPasswordLive do
     {:noreply,
      socket
      |> put_flash(:info, info)
-     |> redirect(to: ~p"/")}
+     |> push_navigate(to: ~p"/")}
   end
 end

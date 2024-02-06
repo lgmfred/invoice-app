@@ -82,7 +82,8 @@ defmodule InvoiceApp.Accounts.User do
   defp validate_password(changeset, opts) do
     changeset
     |> validate_required([:password])
-    |> validate_length(:password, min: 12, max: 72)
+    |> validate_length(:password, min: 12, message: "should be at least 12 characters")
+    |> validate_length(:password, max: 72, message: "should be at most 72 characters")
     # Examples of additional password validation:
     |> validate_format(:password, ~r/[a-z]/, message: "at least one lower case character")
     |> validate_format(:password, ~r/[A-Z]/, message: "at least one upper case character")
@@ -125,6 +126,43 @@ defmodule InvoiceApp.Accounts.User do
       |> unique_constraint(:username)
     else
       changeset
+    end
+  end
+
+  @doc """
+  A user changeset for changing the full name.
+
+  It requires the full name to change otherwise an error is added.
+  """
+  def full_name_changeset(user, attrs) do
+    full_name = user.full_name
+
+    case attrs do
+      %{full_name: ^full_name} ->
+        user
+        |> cast(attrs, [:full_name])
+        |> validate_required(:full_name)
+        |> add_error(:full_name, "did not change")
+
+      %{} ->
+        user
+        |> cast(attrs, [:full_name])
+        |> validate_required(:full_name)
+    end
+  end
+
+  @doc """
+  A user changeset for changing the username.
+
+  It requires the username to change otherwise an error is added.
+  """
+  def username_changeset(user, attrs, opts \\ []) do
+    user
+    |> cast(attrs, [:username])
+    |> validate_username(opts)
+    |> case do
+      %{changes: %{username: _}} = changeset -> changeset
+      %{} = changeset -> add_error(changeset, :username, "did not change")
     end
   end
 
@@ -193,7 +231,7 @@ defmodule InvoiceApp.Accounts.User do
     if valid_password?(changeset.data, password) do
       changeset
     else
-      add_error(changeset, :current_password, "is not valid")
+      add_error(changeset, :current_password, "Password is not valid.")
     end
   end
 end

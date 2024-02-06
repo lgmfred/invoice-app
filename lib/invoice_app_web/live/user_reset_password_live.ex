@@ -58,10 +58,13 @@ defmodule InvoiceAppWeb.UserResetPasswordLive do
   def handle_event("reset_password", %{"user" => user_params}, socket) do
     case Accounts.reset_user_password(socket.assigns.user, user_params) do
       {:ok, _} ->
-        {:noreply,
-         socket
-         |> put_flash(:info, "Password reset successfully.")
-         |> push_navigate(to: ~p"/users/log_in")}
+        {
+          :noreply,
+          socket
+          |> put_flash(:info, "Password reset successfully.")
+          |> push_navigate(to: ~p"/users/log_in")
+          #  |> redirect(to: ~p"/users/log_in")
+        }
 
       {:error, changeset} ->
         {:noreply, assign_form(socket, Map.put(changeset, :action, :insert))}

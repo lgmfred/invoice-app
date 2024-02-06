@@ -45,6 +45,6 @@ defmodule InvoiceAppWeb.UserForgotPasswordLive do
     {:noreply,
      socket
      |> put_flash(:info, info)
-     |> push_navigate(to: ~p"/")}
+     |> redirect(to: ~p"/")}
   end
 end

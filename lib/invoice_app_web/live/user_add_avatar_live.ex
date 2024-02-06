@@ -113,24 +113,7 @@ defmodule InvoiceAppWeb.UserAddAvatarLive do
         {:noreply, push_navigate(socket, to: ~p"/users/add_address")}
 
       [avatar_url | _] ->
-        old_avatar = socket.assigns.current_user.avatar_url
-        attrs = %{avatar_url: avatar_url}
-
-        case Accounts.update_user(socket.assigns.current_user, attrs) do
-          {:ok, user} ->
-            if old_avatar do
-              Path.join(["priv", "static", old_avatar])
-              |> File.rm!()
-            end
-
-            {:noreply,
-             socket
-             |> assign(current_user: user)
-             |> push_navigate(to: ~p"/users/add_address")}
-
-          {:error, %Ecto.Changeset{} = _changeset} ->
-            {:noreply, socket}
-        end
+        update_user(socket, avatar_url)
     end
   end
 
@@ -151,6 +134,28 @@ defmodule InvoiceAppWeb.UserAddAvatarLive do
       avatar_url_path = static_path(socket, ~p"/uploads/#{Path.basename(dest)}")
       {:ok, avatar_url_path}
     end)
+  end
+
+  defp update_user(socket, avatar_url) do
+    current_user = socket.assigns.current_user
+    old_avatar = current_user.avatar_ur
+    attrs = %{avatar_url: avatar_url}
+
+    case Accounts.update_user(current_user, attrs) do
+      {:ok, user} ->
+        if old_avatar do
+          Path.join(["priv", "static", old_avatar])
+          |> File.rm!()
+        end
+
+        {:noreply,
+         socket
+         |> assign(current_user: user)
+         |> push_navigate(to: ~p"/users/add_address")}
+
+      {:error, %Ecto.Changeset{} = _changeset} ->
+        {:noreply, socket}
+    end
   end
 
   def error_to_string(:too_large), do: "Too large"

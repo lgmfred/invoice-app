@@ -4,9 +4,7 @@ defmodule InvoiceAppWeb.AddBusinessAddressLive do
   alias InvoiceApp.Accounts
   alias InvoiceApp.Accounts.BusinessAddress
 
-  def mount(_params, session, socket) do
-    IO.inspect(session, label: "Session")
-
+  def mount(_params, _session, socket) do
     changeset =
       if socket.assigns.current_user.business_address do
         socket.assigns.current_user.business_address

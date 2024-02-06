@@ -18,7 +18,7 @@ defmodule InvoiceAppWeb.UserRegistrationLiveTest do
         conn
         |> log_in_user(user_fixture())
         |> live(~p"/users/register")
-        |> follow_redirect(conn, "/")
+        |> follow_redirect(conn, "/invoices")
 
       assert {:ok, _conn} = result
     end
@@ -29,11 +29,19 @@ defmodule InvoiceAppWeb.UserRegistrationLiveTest do
       result =
         lv
         |> element("#registration_form")
-        |> render_change(user: %{"email" => "with spaces", "password" => "too short"})
+        |> render_change(
+          user: %{
+            "name" => "some name",
+            "email" => "with spaces",
+            "username" => "username",
+            "password" => "too short"
+          }
+        )
 
       assert result =~ "Create an account"
-      assert result =~ "must have the @ sign and no spaces"
-      assert result =~ "should be at least 12 character"
+      assert result =~ "Please enter a valid email address"
+      assert result =~ "at least one digit"
+      assert result =~ "should be at least 12 characters"
     end
   end
 
@@ -46,14 +54,14 @@ defmodule InvoiceAppWeb.UserRegistrationLiveTest do
       render_submit(form)
       conn = follow_trigger_action(form, conn)
 
-      assert redirected_to(conn) == ~p"/"
+      assert redirected_to(conn) == ~p"/invoices"
 
       # Now do a logged in request and assert on the menu
-      conn = get(conn, "/")
-      response = html_response(conn, 200)
-      assert response =~ email
-      assert response =~ "Settings"
-      assert response =~ "Log out"
+      {:ok, _lv, html} = live(conn, "/users/confirm")
+      assert html =~ "Confirm your Email  Address."
+      assert html =~ "We&#39;ve sent a confirmation email to"
+      assert html =~ email
+      assert html =~ "Please follow the link in the message to confirm your email address."
     end
 
     test "renders errors for duplicated email", %{conn: conn} do
@@ -82,12 +90,12 @@ defmodule InvoiceAppWeb.UserRegistrationLiveTest do
           user: %{
             "email" => "lgmfred@ayikoyo.com",
             "username" => user.username,
-            "password" => "very_valid_password!"
+            "password" => "Hello 2 world!"
           }
         )
         |> render_submit()
 
-      assert result =~ "has already been taken"
+      assert result =~ "This username is taken"
     end
   end
 
@@ -101,7 +109,9 @@ defmodule InvoiceAppWeb.UserRegistrationLiveTest do
         |> render_click()
         |> follow_redirect(conn, ~p"/users/log_in")
 
-      assert login_html =~ "Log in"
+      assert login_html =~ "Sign in to Invoice"
+      assert login_html =~ "Continue"
+      assert login_html =~ "Don&#39;t have an account?"
     end
   end
 end

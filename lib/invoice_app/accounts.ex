@@ -96,6 +96,56 @@ defmodule InvoiceApp.Accounts do
   ## Settings
 
   @doc """
+  Returns an `%Ecto.Changeset{}` for changing the user full name.
+
+  ## Examples
+
+      iex> change_full_name(user)
+      %Ecto.Changeset{data: %User{}}
+
+  """
+  def change_full_name(user, attrs \\ %{}) do
+    User.full_name_changeset(user, attrs)
+  end
+
+  @doc """
+  Updates the user full name
+
+  If the password matches, the user full name is updated.
+  """
+  def update_full_name(user, password, attrs) do
+    user
+    |> change_full_name(attrs)
+    |> User.validate_current_password(password)
+    |> Repo.update()
+  end
+
+  @doc """
+  Returns an `%Ecto.Changeset{}` for changing the username.
+
+  ## Examples
+
+      iex> change_username(user)
+      %Ecto.Changeset{data: %User{}}
+
+  """
+  def change_username(user, attrs \\ %{}) do
+    User.username_changeset(user, attrs)
+  end
+
+  @doc """
+  Updates the username
+
+  If the password matches, the username is updated.
+  """
+  def update_username(user, password, attrs) do
+    user
+    |> change_username(attrs)
+    |> User.validate_current_password(password)
+    |> Repo.update()
+  end
+
+  @doc """
   Returns an `%Ecto.Changeset{}` for changing the user email.
 
   ## Examples

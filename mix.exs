@@ -10,7 +10,7 @@ defmodule InvoiceApp.MixProject do
       start_permanent: Mix.env() == :prod,
       aliases: aliases(),
       deps: deps(),
-      test_coverage: [tool: ExCoveralls],
+      test_coverage: [tool: ExCoveralls, export: "cov"],
       dialyzer: [
         plt_local_path: "priv/plts",
         plt_add_apps: [:mix, :ex_unit]

@@ -1,22 +1,30 @@
 defmodule InvoiceAppWeb.UserSettingsLiveTest do
   use InvoiceAppWeb.ConnCase
 
-  alias InvoiceApp.Accounts
   import Phoenix.LiveViewTest
   import InvoiceApp.AccountsFixtures
 
+  alias Faker.Person.Fr
+  alias InvoiceApp.Accounts
+
+  setup do
+    %{user: confirm_email(user_fixture())}
+  end
+
   describe "Settings page" do
-    test "renders settings page", %{conn: conn} do
+    test "renders settings page", %{conn: conn, user: user} do
       {:ok, _lv, html} =
         conn
-        |> log_in_user(user_fixture())
+        |> log_in_user(user)
         |> live(~p"/users/settings")
 
+      assert html =~ "Change Name"
+      assert html =~ "Change Username"
       assert html =~ "Change Email"
       assert html =~ "Change Password"
     end
 
-    test "redirects if user is not logged in", %{conn: conn} do
+    test "redirects if user is not logged in", %{conn: conn, user: _user} do
       assert {:error, redirect} = live(conn, ~p"/users/settings")
 
       assert {:redirect, %{to: path, flash: flash}} = redirect
@@ -25,10 +33,140 @@ defmodule InvoiceAppWeb.UserSettingsLiveTest do
     end
   end
 
+  describe "update full name" do
+    setup %{conn: conn} do
+      password = valid_user_password()
+
+      user =
+        user_fixture(%{password: password})
+        |> confirm_email()
+
+      %{conn: log_in_user(conn, user), user: user, password: password}
+    end
+
+    test "full_name update validation errors", %{conn: conn, user: user, password: password} do
+      {:ok, view, _html} = live(conn, ~p"/users/settings")
+
+      result =
+        view
+        |> form("#name_form", %{
+          "current_password" => password,
+          "user" => %{"full_name" => ""}
+        })
+        |> render_change()
+
+      refetch_user = Accounts.get_user!(user.id)
+
+      assert result =~ "can&#39;t be blank"
+      assert refetch_user.full_name == user.full_name
+    end
+
+    test "full_name update submit errors", %{conn: conn, user: user, password: _password} do
+      full_name = Fr.name()
+      {:ok, view, _html} = live(conn, ~p"/users/settings")
+
+      result =
+        view
+        |> form("#name_form", %{
+          "current_password" => "wrong password",
+          "user" => %{"full_name" => full_name}
+        })
+        |> render_submit()
+
+      updated_user = Accounts.get_user!(user.id)
+
+      assert result =~ "Password is not valid."
+      assert updated_user.full_name == user.full_name
+      refute updated_user.full_name == full_name
+    end
+
+    test "full_name update submit success", %{conn: conn, user: user, password: password} do
+      full_name = Fr.name()
+      {:ok, view, _html} = live(conn, ~p"/users/settings")
+
+      view
+      |> form("#name_form", %{
+        "current_password" => password,
+        "user" => %{"full_name" => full_name}
+      })
+      |> render_submit()
+
+      updated_user = Accounts.get_user!(user.id)
+
+      assert updated_user.full_name == full_name
+      refute updated_user.full_name == user.full_name
+    end
+  end
+
+  describe "update username" do
+    setup %{conn: conn} do
+      password = valid_user_password()
+
+      user =
+        user_fixture(%{password: password})
+        |> confirm_email()
+
+      %{conn: log_in_user(conn, user), user: user, password: password}
+    end
+
+    test "username update validation errors", %{conn: conn, user: user, password: password} do
+      {:ok, view, _html} = live(conn, ~p"/users/settings")
+
+      result =
+        view
+        |> form("#username_form", %{
+          "current_password" => password,
+          "user" => %{"username" => user.username}
+        })
+        |> render_change()
+
+      assert result =~ "did not change"
+    end
+
+    test "username update submit errors", %{conn: conn, user: user, password: password} do
+      existing_user = user_fixture()
+      {:ok, view, _html} = live(conn, ~p"/users/settings")
+
+      result =
+        view
+        |> form("#username_form", %{
+          "current_password" => password,
+          "user" => %{"username" => existing_user.username}
+        })
+        |> render_submit()
+
+      refetch_user = Accounts.get_user!(user.id)
+
+      assert result =~ "This username is taken"
+      assert refetch_user.username == user.username
+    end
+
+    test "username update submit success", %{conn: conn, user: user, password: password} do
+      unique_username = unique_username()
+      {:ok, view, _html} = live(conn, ~p"/users/settings")
+
+      view
+      |> form("#username_form", %{
+        "current_password" => password,
+        "user" => %{"username" => unique_username}
+      })
+      |> render_submit()
+
+      updated_user = Accounts.get_user!(user.id)
+
+      assert updated_user.username == unique_username
+      refute updated_user.username == user.username
+    end
+  end
+
   describe "update email form" do
     setup %{conn: conn} do
       password = valid_user_password()
-      user = user_fixture(%{password: password})
+
+      user =
+        user_fixture(%{password: password})
+        |> confirm_email()
+
       %{conn: log_in_user(conn, user), user: user, password: password}
     end
 
@@ -49,7 +187,7 @@ defmodule InvoiceAppWeb.UserSettingsLiveTest do
       assert Accounts.get_user_by_email(user.email)
     end
 
-    test "renders errors with invalid data (phx-change)", %{conn: conn} do
+    test "renders errors with invalid data (phx-change)", %{conn: conn, user: _user} do
       {:ok, lv, _html} = live(conn, ~p"/users/settings")
 
       result =
@@ -62,7 +200,7 @@ defmodule InvoiceAppWeb.UserSettingsLiveTest do
         })
 
       assert result =~ "Change Email"
-      assert result =~ "must have the @ sign and no spaces"
+      assert result =~ "Please enter a valid email address"
     end
 
     test "renders errors with invalid data (phx-submit)", %{conn: conn, user: user} do
@@ -85,7 +223,11 @@ defmodule InvoiceAppWeb.UserSettingsLiveTest do
   describe "update password form" do
     setup %{conn: conn} do
       password = valid_user_password()
-      user = user_fixture(%{password: password})
+
+      user =
+        user_fixture(%{password: password})
+        |> confirm_email()
+
       %{conn: log_in_user(conn, user), user: user, password: password}
     end
 
@@ -118,7 +260,7 @@ defmodule InvoiceAppWeb.UserSettingsLiveTest do
       assert Accounts.get_user_by_email_and_password(user.email, new_password)
     end
 
-    test "renders errors with invalid data (phx-change)", %{conn: conn} do
+    test "renders errors with invalid data (phx-change)", %{conn: conn, user: _user} do
       {:ok, lv, _html} = live(conn, ~p"/users/settings")
 
       result =
@@ -133,7 +275,7 @@ defmodule InvoiceAppWeb.UserSettingsLiveTest do
         })
 
       assert result =~ "Change Password"
-      assert result =~ "should be at least 12 character(s)"
+      assert result =~ "should be at least 12 characters"
       assert result =~ "does not match password"
     end
 
@@ -152,7 +294,7 @@ defmodule InvoiceAppWeb.UserSettingsLiveTest do
         |> render_submit()
 
       assert result =~ "Change Password"
-      assert result =~ "should be at least 12 character(s)"
+      assert result =~ "should be at least 12 characters"
       assert result =~ "does not match password"
       assert result =~ "is not valid"
     end
@@ -160,7 +302,7 @@ defmodule InvoiceAppWeb.UserSettingsLiveTest do
 
   describe "confirm email" do
     setup %{conn: conn} do
-      user = user_fixture()
+      user = confirm_email(user_fixture())
       email = unique_user_email()
 
       token =

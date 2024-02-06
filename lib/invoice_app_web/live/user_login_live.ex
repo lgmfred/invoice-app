@@ -10,7 +10,7 @@ defmodule InvoiceAppWeb.UserLoginLive do
       <div class="w-full h-screen text-center bg-purple-500">
         <div class="h-screen mx-8 lg:mx-6 flex flex-col place-content-center gap-8 bg-yellow-600">
           <.link
-            navigate={~p"/users/add_avatar"}
+            navigate={~p"/"}
             class="bg-pink-600 hidden lg:flex items-center justify-start gap-1 my-0 font-medium text-lg text-[#7C5DFA]"
           >
             <svg
@@ -71,7 +71,11 @@ defmodule InvoiceAppWeb.UserLoginLive do
               />
               <div class="flex place-content-between">
                 <.input field={@form[:remember_me]} type="checkbox" label="Remember Me" />
-                <.link navigate={~p"/users/reset_password"} class="text-sm text-[#E86969] font-medium">
+                <.link
+                  data-role="page-link"
+                  navigate={~p"/users/reset_password"}
+                  class="text-sm text-[#E86969] font-medium"
+                >
                   Forgot Password?
                 </.link>
               </div>

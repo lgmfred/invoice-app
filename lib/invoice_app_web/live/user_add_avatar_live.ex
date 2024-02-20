@@ -5,11 +5,14 @@ defmodule InvoiceAppWeb.UserAddAvatarLive do
 
   @impl Phoenix.LiveView
   def mount(_params, _session, socket) do
+    if connected?(socket), do: IO.inspect(self(), label: "CONNECTED")
+    IO.inspect(self(), label: "DISCONNECTED")
+
     socket =
       allow_upload(socket, :avatar,
         accept: ~w(.png .jpeg .jpg),
         max_entries: 1,
-        max_file_size: 600_000
+        max_file_size: 400_000
       )
 
     {:ok, socket}
@@ -55,19 +58,33 @@ defmodule InvoiceAppWeb.UserAddAvatarLive do
           >
             <img
               :if={@uploads.avatar.entries == [] && @current_user.avatar_url}
-              class="w-24 h-24  justify-self-center rounded-full border-2 border-dashed "
               src={@current_user.avatar_url}
+              data-role="user-avatar"
+              class="w-24 h-24  justify-self-center rounded-full border-2 border-dashed "
               alt="Avatar"
             />
             <div
               :if={@uploads.avatar.entries == [] && !@current_user.avatar_url}
               class="w-24 h-24 flex justify-center items-center border-2 border-dashed rounded-full"
             >
-              <img src="/images/default_avatar.png" alt="Avatar" />
+              <img data-role="default-avatar" src="/images/default_avatar.png" alt="Avatar" />
             </div>
             <%= for entry <- @uploads.avatar.entries do %>
               <article :if={@uploads.avatar.entries != []} class="justify-self-center">
-                <.live_img_preview class="w-24 h-24 rounded-full outline-double" entry={entry} />
+                <.link
+                  data-role="cancel-upload"
+                  phx-click="cancel-upload"
+                  phx-value-ref={entry.ref}
+                  aria-label="cancel"
+                  class="flex justify-end text-[#E86969]"
+                >
+                  &times;
+                </.link>
+                <.live_img_preview
+                  data-role="image-preview"
+                  entry={entry}
+                  class="w-24 h-24 rounded-full outline-double"
+                />
               </article>
             <% end %>
 
@@ -79,17 +96,21 @@ defmodule InvoiceAppWeb.UserAddAvatarLive do
             <div class="col-span-2 text-[#E86969]">
               <%= for entry <- @uploads.avatar.entries do %>
                 <%= for err <- upload_errors(@uploads.avatar, entry) do %>
-                  <p class="alert alert-danger justify-self-center"><%= error_to_string(err) %></p>
+                  <p data-role="entry-upload-error" class="alert alert-danger justify-self-center">
+                    <%= error_to_string(err) %>
+                  </p>
                 <% end %>
               <% end %>
               <%= for err <- upload_errors(@uploads.avatar) do %>
-                <p class="alert alert-danger justify-self-center"><%= error_to_string(err) %></p>
+                <p data-role="general-upload-error" class="alert alert-danger justify-self-center">
+                  <%= error_to_string(err) %>
+                </p>
               <% end %>
             </div>
 
             <button
-              class="col-start-2 col-end-2 my-auto justify-self-center px-10 py-2 bg-[#979797] rounded-full font-semibold"
               type="submit"
+              class="col-start-2 col-end-2 my-auto justify-self-center px-10 py-2 bg-[#979797] rounded-full font-semibold"
             >
               Continue
             </button>
@@ -99,6 +120,11 @@ defmodule InvoiceAppWeb.UserAddAvatarLive do
       <img class="lg:hidden w-full h-full" src="/images/add_avatar_bottom.png" alt="" />
     </div>
     """
+  end
+
+  @impl Phoenix.LiveView
+  def handle_event("cancel-upload", %{"ref" => ref}, socket) do
+    {:noreply, cancel_upload(socket, :avatar, ref)}
   end
 
   @impl Phoenix.LiveView
@@ -119,35 +145,28 @@ defmodule InvoiceAppWeb.UserAddAvatarLive do
 
   defp consume_uploads(socket) do
     consume_uploaded_entries(socket, :avatar, fn %{path: path}, entry ->
-      dest =
-        Path.join([
-          "priv",
-          "static",
-          "uploads",
-          "#{entry.uuid}-#{entry.client_name}"
-        ])
-
-      Path.dirname(dest)
-      |> File.mkdir_p!()
-
+      dest = upload_destination(entry)
+      Path.dirname(dest) |> File.mkdir_p!()
       File.cp!(path, dest)
-      avatar_url_path = static_path(socket, ~p"/uploads/#{Path.basename(dest)}")
-      {:ok, avatar_url_path}
+      static_path = Path.join(InvoiceApp.public_uploads_path(), Path.basename(dest))
+      {:ok, static_path(socket, static_path)}
     end)
+  end
+
+  defp upload_destination(entry) do
+    Path.join(InvoiceApp.uploads_dir(), filename(entry))
+  end
+
+  defp filename(entry) do
+    "#{entry.uuid}-#{entry.client_name}"
   end
 
   defp update_user(socket, avatar_url) do
     current_user = socket.assigns.current_user
-    old_avatar = current_user.avatar_ur
     attrs = %{avatar_url: avatar_url}
 
     case Accounts.update_user(current_user, attrs) do
       {:ok, user} ->
-        if old_avatar do
-          Path.join(["priv", "static", old_avatar])
-          |> File.rm!()
-        end
-
         {:noreply,
          socket
          |> assign(current_user: user)

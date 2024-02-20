@@ -63,7 +63,6 @@ defmodule InvoiceAppWeb.UserResetPasswordLive do
           socket
           |> put_flash(:info, "Password reset successfully.")
           |> push_navigate(to: ~p"/users/log_in")
-          #  |> redirect(to: ~p"/users/log_in")
         }
 
       {:error, changeset} ->

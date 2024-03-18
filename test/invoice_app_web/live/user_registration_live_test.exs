@@ -58,7 +58,7 @@ defmodule InvoiceAppWeb.UserRegistrationLiveTest do
 
       # Now do a logged in request and assert on the menu
       {:ok, _lv, html} = live(conn, "/users/confirm")
-      assert html =~ "Confirm your Email  Address."
+      assert html =~ "Confirm Your Email Address."
       assert html =~ "We&#39;ve sent a confirmation email to"
       assert html =~ email
       assert html =~ "Please follow the link in the message to confirm your email address."

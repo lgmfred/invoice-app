@@ -17,7 +17,7 @@ defmodule InvoiceAppWeb.UserConfirmationInstructionsLiveTest do
       assert html =~ "Resend confirmation instructions"
     end
 
-    test "sends a new confirmation token", %{conn: conn, user: user} do
+    test "sends a new confirmation token (logged out user)", %{conn: conn, user: user} do
       {:ok, lv, _html} = live(conn, ~p"/users/confirm")
 
       {:ok, conn} =
@@ -30,6 +30,24 @@ defmodule InvoiceAppWeb.UserConfirmationInstructionsLiveTest do
                "If your email is in our system"
 
       assert Repo.get_by!(Accounts.UserToken, user_id: user.id).context == "confirm"
+    end
+
+    test "sends a new confirmation token (logged in user)", %{conn: conn, user: user} do
+      conn = log_in_user(conn, user)
+      {:ok, view, html} = live(conn, ~p"/users/confirm")
+
+      {:ok, conn} =
+        view
+        |> form("#resend_confirmation_form", user: %{})
+        |> render_submit()
+        |> follow_redirect(conn, ~p"/")
+
+      assert html =~ "Confirm Your Email Address."
+      assert html =~ user.email
+      assert html =~ "Resend confirmation instructions"
+
+      assert Phoenix.Flash.get(conn.assigns.flash, :info) =~
+               "We've sent a confirmation email. Please follow the link in the message to confirm your email address."
     end
 
     test "does not send confirmation token if user is confirmed", %{conn: conn, user: user} do

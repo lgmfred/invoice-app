@@ -54,7 +54,7 @@ defmodule InvoiceAppWeb.UserResetPasswordLiveTest do
     test "resets password once", %{conn: conn, token: token, user: user} do
       {:ok, view, _html} = live(conn, ~p"/users/reset_password/#{token}")
 
-      {:ok, _view, _html} =
+      {:ok, conn} =
         view
         |> form("#reset_password_form",
           user: %{
@@ -66,7 +66,7 @@ defmodule InvoiceAppWeb.UserResetPasswordLiveTest do
         |> follow_redirect(conn, ~p"/users/log_in")
 
       refute get_session(conn, :user_token)
-      assert Phoenix.Flash.get(conn.assigns.flash, :info) =~ "Password reset successfully"
+      assert Phoenix.Flash.get(conn.assigns.flash, :info) =~ "Password reset successfully."
       assert Accounts.get_user_by_email_and_password(user.email, "New valid passw0rd!")
     end
 

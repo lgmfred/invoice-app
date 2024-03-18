@@ -1,4 +1,5 @@
 defmodule InvoiceAppWeb.UserAddAvatarLiveTest do
+  alias InvoiceApp.Accounts
   use InvoiceAppWeb.ConnCase, async: false
 
   import Phoenix.LiveViewTest
@@ -16,7 +17,7 @@ defmodule InvoiceAppWeb.UserAddAvatarLiveTest do
       user_fixture()
       |> confirm_email()
 
-    %{conn: log_in_user(conn, user)}
+    %{conn: log_in_user(conn, user), user: user}
   end
 
   test "user can see the default avatar if one isn't uploaded yet", %{conn: conn} do
@@ -56,13 +57,21 @@ defmodule InvoiceAppWeb.UserAddAvatarLiveTest do
     assert has_element?(view, "[data-role='entry-upload-error']", "Too large")
   end
 
-  test "user can upload a new avatar", %{conn: conn} do
+  test "user can upload a new avatar", %{conn: conn, user: user} do
     {:ok, view, _html} = live(conn, "/users/add_avatar")
 
     view
     |> upload("cookie-monster.png", "image/png")
     |> form("#upload-form", %{})
     |> render_submit()
+    |> follow_redirect(conn, ~p"/users/add_address")
+
+    updated_user = Accounts.get_user!(user.id)
+
+    {:ok, view, _html} = live(conn, "/users/add_avatar")
+
+    refute user.avatar_url
+    refute user.avatar_url == updated_user.avatar_url
 
     assert has_element?(view, "[data-role='user-avatar']")
     refute has_element?(view, "[data-role='default-avatar']")

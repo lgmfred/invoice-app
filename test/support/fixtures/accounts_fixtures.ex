@@ -15,7 +15,7 @@ defmodule InvoiceApp.AccountsFixtures do
 
   def valid_address_attributes(attrs \\ %{}) do
     Enum.into(attrs, %{
-      country: Address.country(),
+      country: Address.country_code(),
       city: Address.city(),
       street_address: Address.street_address(true),
       postal_code: Address.postcode(),

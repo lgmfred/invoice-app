@@ -5,20 +5,14 @@ defmodule InvoiceAppWeb.AddBusinessAddressLive do
   alias InvoiceApp.Accounts.BusinessAddress
 
   def mount(_params, _session, socket) do
-    changeset =
-      if socket.assigns.current_user.business_address do
-        socket.assigns.current_user.business_address
-        |> BusinessAddress.changeset()
-      else
-        BusinessAddress.changeset(%BusinessAddress{})
-      end
+    changeset = address_changeset(socket)
 
     socket =
       socket
       |> assign(trigger_submit: false, check_errors: false)
       |> assign_form(changeset)
 
-    {:ok, socket, temporary_assigns: [form: nil]}
+    {:ok, socket}
   end
 
   def render(assigns) do
@@ -30,6 +24,7 @@ defmodule InvoiceAppWeb.AddBusinessAddressLive do
       <div class="w-full h-screen text-center bg-purple-500">
         <div class="h-screen m-8 lg:mx-6  flex flex-col place-content-center gap-6 lg:gap-4 bg-yellow-600">
           <.link
+            data-role="avatar-update-link"
             navigate={~p"/users/add_avatar"}
             class="bg-pink-600 hidden lg:flex items-center justify-start gap-1 my-0 font-medium text-lg text-[#7C5DFA]"
           >
@@ -124,7 +119,7 @@ defmodule InvoiceAppWeb.AddBusinessAddressLive do
          socket
          |> assign(current_user: user)
          |> put_flash(:info, "Address updated successfully.")
-         |> push_navigate(to: ~p"/")}
+         |> push_navigate(to: ~p"/invoices")}
 
       {:error, %Ecto.Changeset{} = changeset} ->
         {:noreply,
@@ -132,6 +127,16 @@ defmodule InvoiceAppWeb.AddBusinessAddressLive do
          |> assign(check_errors: true)
          |> assign_form(changeset)
          |> put_flash(:info, "An error occurred during address update.")}
+    end
+  end
+
+  defp address_changeset(socket, params \\ %{}) do
+    if socket.assigns.current_user.business_address do
+      socket.assigns.current_user.business_address
+      |> BusinessAddress.changeset(params)
+    else
+      %BusinessAddress{}
+      |> BusinessAddress.changeset()
     end
   end
 

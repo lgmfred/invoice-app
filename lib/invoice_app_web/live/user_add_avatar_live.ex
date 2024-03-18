@@ -5,9 +5,6 @@ defmodule InvoiceAppWeb.UserAddAvatarLive do
 
   @impl Phoenix.LiveView
   def mount(_params, _session, socket) do
-    if connected?(socket), do: IO.inspect(self(), label: "CONNECTED")
-    IO.inspect(self(), label: "DISCONNECTED")
-
     socket =
       allow_upload(socket, :avatar,
         accept: ~w(.png .jpeg .jpg),

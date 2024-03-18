@@ -16,8 +16,9 @@ defmodule InvoiceAppWeb.UserConfirmationInstructionsLive do
         <% else %>
           <div class="flex flex-col gap-4 py-8 px-16 text-left rounded-xl bg-[#7C5DFA33]">
             <.header class="">
-              Confirm your Email  Address.
+              Confirm Your Email Address.
             </.header>
+
             <p>
               We've sent a confirmation email to <span class="font-bold"><%= @current_user.email %></span>.
               Please follow the link in the message to confirm your email address.

@@ -10,17 +10,39 @@ defmodule InvoiceApp.MixProject do
       start_permanent: Mix.env() == :prod,
       aliases: aliases(),
       deps: deps(),
-      test_coverage: [tool: ExCoveralls],
-      dialyzer: [
-        plt_local_path: "priv/plts",
-        plt_add_apps: [:mix, :ex_unit]
-      ],
-      preferred_cli_env: %{
+      test_coverage: [tool: ExCoveralls, export: "cov"],
+      preferred_cli_env: [
+        ci: :test,
+        "ci.code_quality": :test,
+        "ci.deps": :test,
+        "ci.formatting": :test,
+        "ci.migrations": :test,
+        "ci.security": :test,
+        "ci.test": :test,
         coveralls: :test,
         "coveralls.detail": :test,
-        "coveralls.post": :test,
-        "coveralls.html": :test
-      }
+        "coveralls.html": :test,
+        credo: :test,
+        dialyzer: :test,
+        sobelow: :test
+      ],
+      compilers: [:yecc] ++ Mix.compilers(),
+      compilers: [:leex] ++ Mix.compilers(),
+      test_coverage: [tool: ExCoveralls],
+      dialyzer: [
+        ignore_warnings: ".dialyzer_ignore.exs",
+        plt_add_apps: [:ex_unit, :mix],
+        plt_file: {:no_warn, "priv/plts/dialyzer.plt"}
+      ],
+
+      # Docs
+      name: "InvoiceGenerator",
+      source_url: "https://github.com/kagure-nyakio/invoice_generator",
+      docs: [
+        extras: ["README.md"],
+        main: "readme",
+        source_ref: "main"
+      ]
     ]
   end
 
@@ -65,8 +87,11 @@ defmodule InvoiceApp.MixProject do
       {:credo, "~> 1.7", only: [:dev, :test], runtime: false},
       {:sobelow, "~> 0.13", only: [:dev, :test], runtime: false},
       {:mix_audit, "~> 2.1", only: [:dev, :test], runtime: false},
-      {:dialyxir, "~> 1.4", only: [:dev], runtime: false},
-      {:excoveralls, "~> 0.18", only: :test}
+      {:dialyxir, "~> 1.4", only: [:dev, :test], runtime: false},
+      {:excoveralls, "~> 0.18", only: :test},
+      {:faker, "~> 0.17", only: [:dev, :test]},
+      {:github_workflows_generator, "~> 0.1", only: :dev, runtime: false},
+      {:countries, "~> 1.6"}
     ]
   end
 
@@ -86,15 +111,34 @@ defmodule InvoiceApp.MixProject do
       "assets.build": ["tailwind default", "esbuild default"],
       "assets.deploy": ["tailwind default --minify", "esbuild default --minify", "phx.digest"],
       ci: [
-        "deps.unlock --check-unused",
-        "hex.audit",
-        "deps.audit",
-        "sobelow --config .sobelow-conf",
-        "format --check-formatted",
-        "compile --warnings-as-errors --force",
+        "ci.deps_and_security",
+        "ci.formatting",
+        "ci.code_quality",
+        "ci.test",
+        "ci.migrations"
+      ],
+      "ci.code_quality": [
+        "compile --force --warnings-as-errors",
         "credo --strict",
-        "dialyzer --format short 2>&1"
-      ]
+        "dialyzer"
+      ],
+      "ci.deps_and_security": [
+        "deps.unlock --check-unused",
+        "deps.audit",
+        "sobelow --config .sobelow-conf"
+      ],
+      "ci.formatting": ["format --check-formatted", "cmd --cd assets npx prettier -c .."],
+      "ci.migrations": [
+        "ecto.create --quiet",
+        "ecto.migrate --quiet",
+        "ecto.rollback --all --quiet"
+      ],
+      "ci.test": [
+        "ecto.create --quiet",
+        "ecto.migrate --quiet",
+        "test --cover --warnings-as-errors"
+      ],
+      prettier: ["cmd --cd assets npx prettier -w .."]
     ]
   end
 end

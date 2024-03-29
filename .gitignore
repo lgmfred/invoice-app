@@ -38,3 +38,5 @@ npm-debug.log
 # Ignore Dialyzer PLTs
 /priv/plts/
 
+# Ignore uploaded files
+/priv/static/uploads/

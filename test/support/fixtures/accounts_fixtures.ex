@@ -28,7 +28,8 @@ defmodule InvoiceApp.AccountsFixtures do
       email: unique_user_email(),
       password: valid_user_password(),
       full_name: Fr.name(),
-      username: unique_username()
+      username: unique_username(),
+      terms_agreed?: true
     })
   end
 
@@ -52,6 +53,18 @@ defmodule InvoiceApp.AccountsFixtures do
       extract_user_token(fn url -> Accounts.deliver_user_confirmation_instructions(user, url) end)
       |> Accounts.confirm_user()
 
+    user
+  end
+
+  def add_address(user) do
+    attrs = %{business_address: valid_address_attributes()}
+    {:ok, user} = Accounts.update_user(user, attrs)
+    user
+  end
+
+  def add_avatar(user) do
+    attrs = %{avatar_url: "/images/default_avatar.png"}
+    {:ok, user} = Accounts.update_user(user, attrs)
     user
   end
 end

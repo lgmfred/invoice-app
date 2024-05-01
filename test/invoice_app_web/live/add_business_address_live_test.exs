@@ -9,8 +9,10 @@ defmodule InvoiceAppWeb.AddBusinessAddressLiveTest do
     address = valid_address_attributes()
 
     user =
-      user_fixture(%{business_address: address})
+      %{business_address: address}
+      |> user_fixture()
       |> confirm_email()
+      |> add_avatar()
 
     %{conn: log_in_user(conn, user), user: user}
   end

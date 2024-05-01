@@ -15,7 +15,12 @@ defmodule InvoiceAppWeb.InvoicesLiveTest do
 
   describe "Invoices page" do
     setup %{conn: conn} do
-      user = confirm_email(user_fixture())
+      user =
+        user_fixture()
+        |> confirm_email()
+        |> add_address()
+        |> add_avatar()
+
       %{conn: log_in_user(conn, user), user: user}
     end
 

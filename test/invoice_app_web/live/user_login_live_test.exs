@@ -87,7 +87,7 @@ defmodule InvoiceAppWeb.UserLoginLiveTest do
         |> follow_redirect(conn, ~p"/users/reset_password")
 
       assert reset_html =~ "Forgot your password?"
-      assert reset_html =~ "We&#39;ll send a password reset link to your inbox"
+      assert reset_html =~ "we will send you a link to reset your password."
     end
   end
 end

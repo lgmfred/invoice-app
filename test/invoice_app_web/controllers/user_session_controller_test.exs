@@ -4,7 +4,13 @@ defmodule InvoiceAppWeb.UserSessionControllerTest do
   import InvoiceApp.AccountsFixtures
 
   setup do
-    %{user: confirm_email(user_fixture())}
+    user =
+      user_fixture()
+      |> confirm_email()
+      |> add_address()
+      |> add_avatar()
+
+    %{user: user}
   end
 
   describe "POST /users/log_in" do

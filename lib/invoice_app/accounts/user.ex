@@ -50,6 +50,9 @@ defmodule InvoiceApp.Accounts.User do
     |> validate_username(opts)
     |> validate_required([:full_name])
     |> unique_constraint(:username)
+    |> validate_acceptance(:terms_agreed?,
+      message: "Please accept terms of use and privacy policy"
+    )
   end
 
   @doc """

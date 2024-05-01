@@ -8,14 +8,16 @@ defmodule InvoiceAppWeb.UserForgotPasswordLive do
     <div class="mx-auto max-w-sm">
       <.header class="text-center">
         Forgot your password?
-        <:subtitle>We'll send a password reset link to your inbox</:subtitle>
       </.header>
 
       <.simple_form for={@form} id="reset_password_form" phx-submit="send_email">
+        <p>
+          Enter the email that you used to create your account and we will send you a link to reset your password.
+        </p>
         <.input field={@form[:email]} type="email" placeholder="Email" required />
         <:actions>
-          <.button phx-disable-with="Sending..." class="w-full">
-            Send password reset instructions
+          <.button phx-disable-with="Sending..." class="w-full bg-[#7C5DFA]">
+            Send reset link
           </.button>
         </:actions>
       </.simple_form>

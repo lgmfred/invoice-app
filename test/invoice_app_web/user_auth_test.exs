@@ -213,6 +213,121 @@ defmodule InvoiceAppWeb.UserAuthTest do
     end
   end
 
+  describe "on_mount: :ensure_confirmed_user" do
+    test "redirects if the user hasn't confirmed their email", %{conn: conn} do
+      user = user_fixture()
+      user_token = Accounts.generate_user_session_token(user)
+      session = conn |> put_session(:user_token, user_token) |> get_session()
+
+      socket = %LiveView.Socket{
+        endpoint: InvoiceAppWeb.Endpoint,
+        assigns: %{__changed__: %{}, flash: %{}}
+      }
+
+      assert {:halt, _updated_socket} =
+               UserAuth.on_mount(
+                 :ensure_confirmed_user,
+                 %{},
+                 session,
+                 socket
+               )
+    end
+
+    test "doesn't redirects if the user has confirmed their email", %{conn: conn} do
+      user = user_fixture() |> confirm_email()
+      user_token = Accounts.generate_user_session_token(user)
+      session = conn |> put_session(:user_token, user_token) |> get_session()
+
+      assert {:cont, _updated_socket} =
+               UserAuth.on_mount(
+                 :ensure_confirmed_user,
+                 %{},
+                 session,
+                 %LiveView.Socket{}
+               )
+    end
+  end
+
+  describe "on_mount: :ensure_updated_address" do
+    test "redirects if the user hasn't updated their address", %{conn: conn} do
+      user = user_fixture()
+      user_token = Accounts.generate_user_session_token(user)
+      session = conn |> put_session(:user_token, user_token) |> get_session()
+
+      socket = %LiveView.Socket{
+        endpoint: InvoiceAppWeb.Endpoint,
+        assigns: %{__changed__: %{}, flash: %{}}
+      }
+
+      assert {:halt, _updated_socket} =
+               UserAuth.on_mount(
+                 :ensure_updated_address,
+                 %{},
+                 session,
+                 socket
+               )
+    end
+
+    test "doesn't redirects if the user has updated their address", %{conn: conn, user: user} do
+      user = add_address(user)
+      user_token = Accounts.generate_user_session_token(user)
+      session = conn |> put_session(:user_token, user_token) |> get_session()
+
+      socket = %LiveView.Socket{
+        endpoint: InvoiceAppWeb.Endpoint,
+        assigns: %{__changed__: %{}, flash: %{}}
+      }
+
+      assert {:cont, _updated_socket} =
+               UserAuth.on_mount(
+                 :ensure_updated_address,
+                 %{},
+                 session,
+                 socket
+               )
+    end
+  end
+
+  describe "on_mount: :ensure_uploaded_avatar" do
+    test "redirects if the user hasn't uploaded an avatar", %{conn: conn} do
+      user = user_fixture()
+      user_token = Accounts.generate_user_session_token(user)
+      session = conn |> put_session(:user_token, user_token) |> get_session()
+
+      socket = %LiveView.Socket{
+        endpoint: InvoiceAppWeb.Endpoint,
+        assigns: %{__changed__: %{}, flash: %{}}
+      }
+
+      assert {:halt, _updated_socket} =
+               UserAuth.on_mount(
+                 :ensure_uploaded_avatar,
+                 %{},
+                 session,
+                 socket
+               )
+    end
+
+    test "doesn't redirects if the user has uploaded an avatar", %{conn: conn, user: user} do
+      user = add_avatar(user)
+      user_token = Accounts.generate_user_session_token(user)
+      session = conn |> put_session(:user_token, user_token) |> get_session()
+
+      socket = %LiveView.Socket{
+        endpoint: InvoiceAppWeb.Endpoint,
+        assigns: %{__changed__: %{}, flash: %{}}
+      }
+
+      assert {:cont, _updated_socket} =
+               UserAuth.on_mount(
+                 :ensure_uploaded_avatar,
+                 %{},
+                 session,
+                 socket
+               )
+    end
+  end
+
   describe "redirect_if_user_is_authenticated/2" do
     test "redirects if user is authenticated", %{conn: conn, user: user} do
       conn = conn |> assign(:current_user, user) |> UserAuth.redirect_if_user_is_authenticated([])
@@ -266,6 +381,177 @@ defmodule InvoiceAppWeb.UserAuthTest do
 
     test "does not redirect if user is authenticated", %{conn: conn, user: user} do
       conn = conn |> assign(:current_user, user) |> UserAuth.require_authenticated_user([])
+      refute conn.halted
+      refute conn.status
+    end
+  end
+
+  describe "require_confirmed_user/2" do
+    test "redirects if user is not confirmed", %{conn: conn} do
+      user = user_fixture()
+
+      conn =
+        conn
+        |> assign(:current_user, user)
+        |> assign(:flash, %{})
+        |> UserAuth.require_confirmed_user([])
+
+      assert conn.halted
+
+      assert redirected_to(conn) == ~p"/users/confirm?#{[email: user.email]}"
+
+      assert Phoenix.Flash.get(conn.assigns.flash, :error) ==
+               "You must confirm your email to access this page."
+    end
+
+    test "stores the path to redirect to on GET", %{conn: conn} do
+      user = user_fixture()
+
+      conn = conn |> assign(:current_user, user) |> assign(:flash, %{})
+
+      halted_conn =
+        %{conn | path_info: ["foo"], query_string: ""}
+        |> fetch_flash()
+        |> UserAuth.require_confirmed_user([])
+
+      assert halted_conn.halted
+      assert get_session(halted_conn, :user_return_to) == "/foo"
+
+      halted_conn =
+        %{conn | path_info: ["foo"], query_string: "bar=baz"}
+        |> fetch_flash()
+        |> UserAuth.require_confirmed_user([])
+
+      assert halted_conn.halted
+      assert get_session(halted_conn, :user_return_to) == "/foo?bar=baz"
+
+      halted_conn =
+        %{conn | path_info: ["foo"], query_string: "bar", method: "POST"}
+        |> fetch_flash()
+        |> UserAuth.require_confirmed_user([])
+
+      assert halted_conn.halted
+      refute get_session(halted_conn, :user_return_to)
+    end
+
+    test "does not redirect if user is confirmed", %{conn: conn, user: user} do
+      conn = conn |> assign(:current_user, user) |> UserAuth.require_confirmed_user([])
+      refute conn.halted
+      refute conn.status
+    end
+  end
+
+  describe "require_user_address/2" do
+    test "redirects if user has not added address", %{conn: conn, user: user} do
+      conn =
+        conn
+        |> assign(:current_user, user)
+        |> assign(:flash, %{})
+        |> UserAuth.require_user_address([])
+
+      assert conn.halted
+
+      assert redirected_to(conn) == ~p"/users/add_address"
+
+      assert Phoenix.Flash.get(conn.assigns.flash, :error) ==
+               "You must add your address details to access this page."
+    end
+
+    test "stores the path to redirect to on GET", %{conn: conn, user: user} do
+      conn = conn |> assign(:current_user, user) |> assign(:flash, %{})
+
+      halted_conn =
+        %{conn | path_info: ["foo"], query_string: ""}
+        |> fetch_flash()
+        |> UserAuth.require_user_address([])
+
+      assert halted_conn.halted
+      assert get_session(halted_conn, :user_return_to) == "/foo"
+
+      halted_conn =
+        %{conn | path_info: ["foo"], query_string: "bar=baz"}
+        |> fetch_flash()
+        |> UserAuth.require_user_address([])
+
+      assert halted_conn.halted
+      assert get_session(halted_conn, :user_return_to) == "/foo?bar=baz"
+
+      halted_conn =
+        %{conn | path_info: ["foo"], query_string: "bar", method: "POST"}
+        |> fetch_flash()
+        |> UserAuth.require_user_address([])
+
+      assert halted_conn.halted
+      refute get_session(halted_conn, :user_return_to)
+    end
+
+    test "does not redirect if user has added address", %{conn: conn, user: user} do
+      user = add_address(user)
+
+      conn =
+        conn
+        |> assign(:flash, %{})
+        |> assign(:current_user, user)
+        |> UserAuth.require_user_address([])
+
+      refute conn.halted
+      refute conn.status
+    end
+  end
+
+  describe "require_user_avatar/2" do
+    test "redirects if user has not added avatar", %{conn: conn, user: user} do
+      conn =
+        conn
+        |> assign(:current_user, user)
+        |> assign(:flash, %{})
+        |> UserAuth.require_user_avatar([])
+
+      assert conn.halted
+
+      assert redirected_to(conn) == ~p"/users/add_avatar"
+
+      assert Phoenix.Flash.get(conn.assigns.flash, :error) ==
+               "You must add a profile picture to access this page."
+    end
+
+    test "stores the path to redirect to on GET", %{conn: conn, user: user} do
+      conn = conn |> assign(:current_user, user) |> assign(:flash, %{})
+
+      halted_conn =
+        %{conn | path_info: ["foo"], query_string: ""}
+        |> fetch_flash()
+        |> UserAuth.require_user_avatar([])
+
+      assert halted_conn.halted
+      assert get_session(halted_conn, :user_return_to) == "/foo"
+
+      halted_conn =
+        %{conn | path_info: ["foo"], query_string: "bar=baz"}
+        |> fetch_flash()
+        |> UserAuth.require_user_avatar([])
+
+      assert halted_conn.halted
+      assert get_session(halted_conn, :user_return_to) == "/foo?bar=baz"
+
+      halted_conn =
+        %{conn | path_info: ["foo"], query_string: "bar", method: "POST"}
+        |> fetch_flash()
+        |> UserAuth.require_user_avatar([])
+
+      assert halted_conn.halted
+      refute get_session(halted_conn, :user_return_to)
+    end
+
+    test "does not redirect if user has added avatar", %{conn: conn, user: user} do
+      user = add_avatar(user)
+
+      conn =
+        conn
+        |> assign(:flash, %{})
+        |> assign(:current_user, user)
+        |> UserAuth.require_user_avatar([])
+
       refute conn.halted
       refute conn.status
     end

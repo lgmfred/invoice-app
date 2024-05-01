@@ -23,13 +23,18 @@ defmodule InvoiceAppWeb.UserConfirmationInstructionsLive do
 
   def render(assigns) do
     ~H"""
-    <div class="min-h-screen">
+    <div class="min-h-screen flex items-center justify-center">
       <%= if @current_user do %>
-        <div class="flex flex-col gap-4 py-8 px-16 text-left rounded-xl bg-[#7C5DFA33]">
-          <.header class="">
-            You've already confirmed your Email Address.
-          </.header>
-        </div>
+        <%= if @current_user.confirmed_at do %>
+          <div class="flex flex-col gap-4 py-8 px-16 text-center">
+            <.header class="">
+              You've already confirmed your Email Address.
+            </.header>
+          </div>
+        <% else %>
+          <.confirm_instruction :if={@email} form={@form} email={@email} />
+          <.confirm_email_form :if={!@email} form={@form} />
+        <% end %>
       <% else %>
         <.confirm_instruction :if={@email} form={@form} email={@email} />
         <.confirm_email_form :if={!@email} form={@form} />

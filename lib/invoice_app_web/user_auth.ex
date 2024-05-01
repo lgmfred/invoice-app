@@ -174,6 +174,66 @@ defmodule InvoiceAppWeb.UserAuth do
     end
   end
 
+  def on_mount(:ensure_confirmed_user, _params, session, socket) do
+    socket = mount_current_user(socket, session)
+
+    case socket.assigns.current_user do
+      %{email: email, confirmed_at: nil} ->
+        socket =
+          socket
+          |> Phoenix.LiveView.put_flash(
+            :error,
+            "You must confirm your email to access this page."
+          )
+          |> Phoenix.LiveView.redirect(to: ~p"/users/confirm?#{[email: email]}")
+
+        {:halt, socket}
+
+      _any_nils ->
+        {:cont, socket}
+    end
+  end
+
+  def on_mount(:ensure_updated_address, _params, session, socket) do
+    socket = mount_current_user(socket, session)
+
+    case socket.assigns.current_user do
+      %{business_address: nil} ->
+        socket =
+          socket
+          |> Phoenix.LiveView.put_flash(
+            :error,
+            "You must add your address details to access this page."
+          )
+          |> Phoenix.LiveView.redirect(to: ~p"/users/add_address")
+
+        {:halt, socket}
+
+      _any_nils ->
+        {:cont, socket}
+    end
+  end
+
+  def on_mount(:ensure_uploaded_avatar, _params, session, socket) do
+    socket = mount_current_user(socket, session)
+
+    case socket.assigns.current_user do
+      %{avatar_url: nil} ->
+        socket =
+          socket
+          |> Phoenix.LiveView.put_flash(
+            :error,
+            "You must add a profile picture to access this page."
+          )
+          |> Phoenix.LiveView.redirect(to: ~p"/users/add_avatar")
+
+        {:halt, socket}
+
+      _any_nils ->
+        {:cont, socket}
+    end
+  end
+
   defp mount_current_user(socket, session) do
     Phoenix.Component.assign_new(socket, :current_user, fn ->
       if user_token = session["user_token"] do
@@ -210,14 +270,49 @@ defmodule InvoiceAppWeb.UserAuth do
         |> redirect(to: ~p"/users/log_in")
         |> halt()
 
-      %{confirmed_at: nil} ->
+      %{} ->
+        conn
+    end
+  end
+
+  def require_confirmed_user(conn, _opts) do
+    case conn.assigns[:current_user] do
+      %{email: email, confirmed_at: nil} ->
         conn
         |> put_flash(:error, "You must confirm your email to access this page.")
         |> maybe_store_return_to()
-        |> redirect(to: ~p"/users/confirm")
+        |> redirect(to: ~p"/users/confirm?#{[email: email]}")
         |> halt()
 
-      %{} ->
+      _any_nils ->
+        conn
+    end
+  end
+
+  def require_user_address(conn, _opts) do
+    case conn.assigns[:current_user] do
+      %{business_address: nil} ->
+        conn
+        |> put_flash(:error, "You must add your address details to access this page.")
+        |> maybe_store_return_to()
+        |> redirect(to: ~p"/users/add_address")
+        |> halt()
+
+      _any_nils ->
+        conn
+    end
+  end
+
+  def require_user_avatar(conn, _opts) do
+    case conn.assigns[:current_user] do
+      %{avatar_url: nil} ->
+        conn
+        |> put_flash(:error, "You must add a profile picture to access this page.")
+        |> maybe_store_return_to()
+        |> redirect(to: ~p"/users/add_avatar")
+        |> halt()
+
+      _any_nils ->
         conn
     end
   end

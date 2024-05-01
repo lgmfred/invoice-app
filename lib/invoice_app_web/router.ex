@@ -69,6 +69,25 @@ defmodule InvoiceAppWeb.Router do
       live "/users/settings/confirm_email/:token", UserSettingsLive, :confirm_email
       live "/users/add_avatar", UserAddAvatarLive
       live "/users/add_address", AddBusinessAddressLive
+    end
+  end
+
+  scope "/", InvoiceAppWeb do
+    pipe_through [
+      :browser,
+      :require_authenticated_user,
+      :require_confirmed_user,
+      :require_user_address,
+      :require_user_avatar
+    ]
+
+    live_session :invoices,
+      on_mount: [
+        {InvoiceAppWeb.UserAuth, :ensure_authenticated},
+        {InvoiceAppWeb.UserAuth, :ensure_confirmed_user},
+        {InvoiceAppWeb.UserAuth, :ensure_updated_address},
+        {InvoiceAppWeb.UserAuth, :ensure_uploaded_avatar}
+      ] do
       live "/invoices", InvoicesLive
     end
   end

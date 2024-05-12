@@ -13,10 +13,10 @@ jobs:
     runs-on: ubuntu-latest
     env:
       elixir-version: 1.16.2
-      otp-version: 25.3.2.10
+      otp-version: 25.3.2.12
     steps:
       - name: Checkout
-        uses: actions/checkout@v2
+        uses: actions/checkout@v4
       - name: Set up Elixir
         uses: erlef/setup-beam@v1
         with:
@@ -25,8 +25,8 @@ jobs:
       - uses: actions/cache@v3
         with:
           path: "_build\ndeps"
-          key: ${{ runner.os }}-mix-${{ hashFiles('**/mix.lock') }}
-          restore-keys: ${{ runner.os }}-mix
+          key: ${{ runner.os }}-${{ env.elixir-version }}-${{ env.otp-version }}-mix-${{ github.sha }}
+          restore-keys: ${{ runner.os }}-${{ env.elixir-version }}-${{ env.otp-version }}-mix-
       - name: Install Elixir dependencies
         env:
           MIX_ENV: test
@@ -41,10 +41,10 @@ jobs:
     runs-on: ubuntu-latest
     env:
       elixir-version: 1.16.2
-      otp-version: 25.3.2.10
+      otp-version: 25.3.2.12
     steps:
       - name: Checkout
-        uses: actions/checkout@v2
+        uses: actions/checkout@v4
       - name: Set up Elixir
         uses: erlef/setup-beam@v1
         with:
@@ -53,8 +53,8 @@ jobs:
       - uses: actions/cache@v3
         with:
           path: "_build\ndeps"
-          key: ${{ runner.os }}-mix-${{ hashFiles('**/mix.lock') }}
-          restore-keys: ${{ runner.os }}-mix
+          key: ${{ runner.os }}-${{ env.elixir-version }}-${{ env.otp-version }}-mix-${{ github.sha }}
+          restore-keys: ${{ runner.os }}-${{ env.elixir-version }}-${{ env.otp-version }}-mix-
       - name: Check code style
         env:
           MIX_ENV: test
@@ -65,10 +65,10 @@ jobs:
     runs-on: ubuntu-latest
     env:
       elixir-version: 1.16.2
-      otp-version: 25.3.2.10
+      otp-version: 25.3.2.12
     steps:
       - name: Checkout
-        uses: actions/checkout@v2
+        uses: actions/checkout@v4
       - name: Set up Elixir
         uses: erlef/setup-beam@v1
         with:
@@ -77,8 +77,8 @@ jobs:
       - uses: actions/cache@v3
         with:
           path: "_build\ndeps"
-          key: ${{ runner.os }}-mix-${{ hashFiles('**/mix.lock') }}
-          restore-keys: ${{ runner.os }}-mix
+          key: ${{ runner.os }}-${{ env.elixir-version }}-${{ env.otp-version }}-mix-${{ github.sha }}
+          restore-keys: ${{ runner.os }}-${{ env.elixir-version }}-${{ env.otp-version }}-mix-
       - name: Check for vulnerable Mix dependencies
         env:
           MIX_ENV: test
@@ -89,10 +89,10 @@ jobs:
     runs-on: ubuntu-latest
     env:
       elixir-version: 1.16.2
-      otp-version: 25.3.2.10
+      otp-version: 25.3.2.12
     steps:
       - name: Checkout
-        uses: actions/checkout@v2
+        uses: actions/checkout@v4
       - name: Set up Elixir
         uses: erlef/setup-beam@v1
         with:
@@ -101,34 +101,32 @@ jobs:
       - uses: actions/cache@v3
         with:
           path: "_build\ndeps"
-          key: ${{ runner.os }}-mix-${{ hashFiles('**/mix.lock') }}
-          restore-keys: ${{ runner.os }}-mix
+          key: ${{ runner.os }}-${{ env.elixir-version }}-${{ env.otp-version }}-mix-${{ github.sha }}
+          restore-keys: ${{ runner.os }}-${{ env.elixir-version }}-${{ env.otp-version }}-mix-
       - name: Restore PLT cache
         uses: actions/cache@v3
-        id: plt_cache
         with:
-          key: ${{ runner.os }}-${{ env.elixir-version }}-${{ env.otp-version }}-plt
-          restore-keys: ${{ runner.os }}-${{ env.elixir-version }}-${{ env.otp-version }}-plt
           path: priv/plts
+          key: ${{ runner.os }}-${{ env.elixir-version }}-${{ env.otp-version }}-plt-${{ github.sha }}
+          restore-keys: ${{ runner.os }}-${{ env.elixir-version }}-${{ env.otp-version }}-plt-
       - name: Create PLTs
-        if: steps.plt_cache.outputs.cache-hit != 'true'
         env:
           MIX_ENV: test
         run: mix dialyzer --plt
       - name: Run dialyzer
         env:
           MIX_ENV: test
-        run: mix dialyzer --format short 2>&1
+        run: mix dialyzer
   format:
     needs: compile
     name: Format
     runs-on: ubuntu-latest
     env:
       elixir-version: 1.16.2
-      otp-version: 25.3.2.10
+      otp-version: 25.3.2.12
     steps:
       - name: Checkout
-        uses: actions/checkout@v2
+        uses: actions/checkout@v4
       - name: Set up Elixir
         uses: erlef/setup-beam@v1
         with:
@@ -137,8 +135,8 @@ jobs:
       - uses: actions/cache@v3
         with:
           path: "_build\ndeps"
-          key: ${{ runner.os }}-mix-${{ hashFiles('**/mix.lock') }}
-          restore-keys: ${{ runner.os }}-mix
+          key: ${{ runner.os }}-${{ env.elixir-version }}-${{ env.otp-version }}-mix-${{ github.sha }}
+          restore-keys: ${{ runner.os }}-${{ env.elixir-version }}-${{ env.otp-version }}-mix-
       - name: Check Elixir formatting
         env:
           MIX_ENV: test
@@ -149,10 +147,10 @@ jobs:
     runs-on: ubuntu-latest
     env:
       elixir-version: 1.16.2
-      otp-version: 25.3.2.10
+      otp-version: 25.3.2.12
     steps:
       - name: Checkout
-        uses: actions/checkout@v2
+        uses: actions/checkout@v4
       - name: Set up Elixir
         uses: erlef/setup-beam@v1
         with:
@@ -161,57 +159,24 @@ jobs:
       - uses: actions/cache@v3
         with:
           path: "_build\ndeps"
-          key: ${{ runner.os }}-mix-${{ hashFiles('**/mix.lock') }}
-          restore-keys: ${{ runner.os }}-mix
+          key: ${{ runner.os }}-${{ env.elixir-version }}-${{ env.otp-version }}-mix-${{ github.sha }}
+          restore-keys: ${{ runner.os }}-${{ env.elixir-version }}-${{ env.otp-version }}-mix-
       - name: Check for retired Hex packages
         env:
           MIX_ENV: test
         run: mix hex.audit
-  migrations:
-    services:
-      db:
-        image: postgres:13
-        ports:
-          - 5432:5432
-        env:
-          POSTGRES_PASSWORD: postgres
-        options: --health-cmd pg_isready --health-interval 10s --health-timeout 5s --health-retries 5
-    needs: compile
-    name: Migrations
-    runs-on: ubuntu-latest
-    env:
-      elixir-version: 1.16.2
-      otp-version: 25.3.2.10
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v2
-      - name: Set up Elixir
-        uses: erlef/setup-beam@v1
-        with:
-          elixir-version: ${{ env.elixir-version }}
-          otp-version: ${{ env.otp-version }}
-      - uses: actions/cache@v3
-        with:
-          path: "_build\ndeps"
-          key: ${{ runner.os }}-mix-${{ hashFiles('**/mix.lock') }}
-          restore-keys: ${{ runner.os }}-mix
-      - name: Check if migrations are reversible
-        env:
-          MIX_ENV: test
-        run: mix ci.migrations
   prettier:
     name: Check formatting using Prettier
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
-        uses: actions/checkout@v2
+        uses: actions/checkout@v4
       - name: Restore npm cache
         uses: actions/cache@v3
         id: npm-cache
         with:
           path: ~/.npm
-          key: ${{ runner.os }}-node
-          restore-keys: ${{ runner.os }}-node
+          key: ${{ runner.os }}-prettier
       - name: Install Prettier
         if: steps.npm-cache.outputs.cache-hit != 'true'
         run: npm i -g prettier
@@ -223,10 +188,10 @@ jobs:
     runs-on: ubuntu-latest
     env:
       elixir-version: 1.16.2
-      otp-version: 25.3.2.10
+      otp-version: 25.3.2.12
     steps:
       - name: Checkout
-        uses: actions/checkout@v2
+        uses: actions/checkout@v4
       - name: Set up Elixir
         uses: erlef/setup-beam@v1
         with:
@@ -235,30 +200,22 @@ jobs:
       - uses: actions/cache@v3
         with:
           path: "_build\ndeps"
-          key: ${{ runner.os }}-mix-${{ hashFiles('**/mix.lock') }}
-          restore-keys: ${{ runner.os }}-mix
+          key: ${{ runner.os }}-${{ env.elixir-version }}-${{ env.otp-version }}-mix-${{ github.sha }}
+          restore-keys: ${{ runner.os }}-${{ env.elixir-version }}-${{ env.otp-version }}-mix-
       - name: Check for security issues using sobelow
         env:
           MIX_ENV: test
         run: mix sobelow --config .sobelow-conf
   test:
-    services:
-      db:
-        image: postgres:13
-        ports:
-          - 5432:5432
-        env:
-          POSTGRES_PASSWORD: postgres
-        options: --health-cmd pg_isready --health-interval 10s --health-timeout 5s --health-retries 5
     needs: compile
     name: Test
     runs-on: ubuntu-latest
     env:
       elixir-version: 1.16.2
-      otp-version: 25.3.2.10
+      otp-version: 25.3.2.12
     steps:
       - name: Checkout
-        uses: actions/checkout@v2
+        uses: actions/checkout@v4
       - name: Set up Elixir
         uses: erlef/setup-beam@v1
         with:
@@ -267,22 +224,84 @@ jobs:
       - uses: actions/cache@v3
         with:
           path: "_build\ndeps"
-          key: ${{ runner.os }}-mix-${{ hashFiles('**/mix.lock') }}
-          restore-keys: ${{ runner.os }}-mix
+          key: ${{ runner.os }}-${{ env.elixir-version }}-${{ env.otp-version }}-mix-${{ github.sha }}
+          restore-keys: ${{ runner.os }}-${{ env.elixir-version }}-${{ env.otp-version }}-mix-
       - name: Run tests
         env:
           MIX_ENV: test
         run: mix test --cover --warnings-as-errors
+  test_linux_script_job:
+    name: Test Linux script
+    runs-on: ubuntu-latest
+    env:
+      TZ: Africa/Kampala
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Restore script result cache
+        uses: actions/cache@v3
+        id: result_cache
+        with:
+          key: ${{ runner.os }}-script-${{ hashFiles('test/scripts/script.exp') }}-${{ hashFiles('priv/static/Linux.sh') }}
+          path: priv/static/Linux.sh
+      - name: Install expect tool
+        if: steps.result_cache.outputs.cache-hit != 'true'
+        run: sudo apt-get update && sudo apt-get install -y expect
+      - name: Test the script
+        if: steps.result_cache.outputs.cache-hit != 'true'
+        run: cd test/scripts && expect script.exp Linux.sh
+      - name: Generate an app and start the server
+        if: steps.result_cache.outputs.cache-hit != 'true'
+        run: /bin/zsh -c 'source ~/.zshrc && make -f test/scripts/Makefile'
+      - name: Check HTTP status code
+        if: steps.result_cache.outputs.cache-hit != 'true'
+        uses: nick-fields/retry@v2
+        with:
+          command: 'INPUT_SITES=''["http://localhost:4000"]'' INPUT_EXPECTED=''[200]'' ./test/scripts/check_status_code.sh'
+          max_attempts: 7
+          retry_wait_seconds: 5
+          timeout_seconds: 1
+  test_macos_script_job:
+    name: Test macOS script
+    runs-on: macos-latest
+    env:
+      TZ: Africa/Kampala
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Restore script result cache
+        uses: actions/cache@v3
+        id: result_cache
+        with:
+          key: ${{ runner.os }}-script-${{ hashFiles('test/scripts/script.exp') }}-${{ hashFiles('priv/static/macOS.sh') }}
+          path: priv/static/macOS.sh
+      - name: Install expect tool
+        if: steps.result_cache.outputs.cache-hit != 'true'
+        run: brew install expect
+      - name: Test the script
+        if: steps.result_cache.outputs.cache-hit != 'true'
+        run: cd test/scripts && expect script.exp macOS.sh
+      - name: Generate an app and start the server
+        if: steps.result_cache.outputs.cache-hit != 'true'
+        run: /bin/zsh -c 'source ~/.zshrc && make -f test/scripts/Makefile'
+      - name: Check HTTP status code
+        if: steps.result_cache.outputs.cache-hit != 'true'
+        uses: nick-fields/retry@v2
+        with:
+          command: 'INPUT_SITES=''["http://localhost:4000"]'' INPUT_EXPECTED=''[200]'' ./test/scripts/check_status_code.sh'
+          max_attempts: 7
+          retry_wait_seconds: 5
+          timeout_seconds: 1
   unused_deps:
     needs: compile
     name: Check unused deps
     runs-on: ubuntu-latest
     env:
       elixir-version: 1.16.2
-      otp-version: 25.3.2.10
+      otp-version: 25.3.2.12
     steps:
       - name: Checkout
-        uses: actions/checkout@v2
+        uses: actions/checkout@v4
       - name: Set up Elixir
         uses: erlef/setup-beam@v1
         with:
@@ -291,9 +310,52 @@ jobs:
       - uses: actions/cache@v3
         with:
           path: "_build\ndeps"
-          key: ${{ runner.os }}-mix-${{ hashFiles('**/mix.lock') }}
-          restore-keys: ${{ runner.os }}-mix
+          key: ${{ runner.os }}-${{ env.elixir-version }}-${{ env.otp-version }}-mix-${{ github.sha }}
+          restore-keys: ${{ runner.os }}-${{ env.elixir-version }}-${{ env.otp-version }}-mix-
       - name: Check for unused Mix dependencies
         env:
           MIX_ENV: test
         run: mix deps.unlock --check-unused
+  deploy_preview_app:
+    name: Deploy preview app
+    needs:
+      - compile
+      - credo
+      - deps_audit
+      - dialyzer
+      - format
+      - hex_audit
+      - prettier
+      - sobelow
+      - test
+      - test_linux_script_job
+      - test_macos_script_job
+      - unused_deps
+    runs-on: ubuntu-latest
+    permissions: write-all
+    concurrency:
+      group: pr-${{ github.event.number }}
+    environment:
+      name: pr-${{ github.event.number }}
+      url: https://bill-bliss-pr-${{ github.event.number }}.fly.dev
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Delete previous deployments
+        uses: strumwolf/delete-deployment-environment@v2.2.3
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          environment: pr-${{ github.event.number }}
+          ref: ${{ github.head_ref }}
+          onlyRemoveDeployments: true
+      - name: Deploy preview app
+        uses: optimumBA/fly-preview-apps@main
+        env:
+          FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
+          FLY_ORG: optimum-bh-internship
+          FLY_REGION: lhr
+          PHX_HOST: bill-bliss-pr-${{ github.event.number }}.fly.dev
+          REPO_NAME: invoice-app
+        with:
+          name: bill-bliss-pr-${{ github.event.number }}
+          secrets: APPSIGNAL_APP_ENV=preview APPSIGNAL_PUSH_API_KEY=${{ secrets.APPSIGNAL_PUSH_API_KEY }} PHX_HOST=${{ env.PHX_HOST }} SECRET_KEY_BASE=${{ secrets.SECRET_KEY_BASE }}

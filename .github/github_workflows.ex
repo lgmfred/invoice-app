@@ -80,11 +80,10 @@ defmodule GithubWorkflows do
       dialyzer: dialyzer_job(),
       format: format_job(),
       hex_audit: hex_audit_job(),
+      migrations: migrations_job(),
       prettier: prettier_job(),
       sobelow: sobelow_job(),
       test: test_job(),
-      test_linux_script_job: test_linux_script_job(),
-      test_macos_script_job: test_macos_script_job(),
       unused_deps: unused_deps_job()
     ]
   end
@@ -169,11 +168,10 @@ defmodule GithubWorkflows do
         :dialyzer,
         :format,
         :hex_audit,
+        :migrations,
         :prettier,
         :sobelow,
         :test,
-        :test_linux_script_job,
-        :test_macos_script_job,
         :unused_deps
       ],
       "runs-on": "ubuntu-latest"
@@ -341,6 +339,22 @@ defmodule GithubWorkflows do
     )
   end
 
+  defp migrations_job do
+    elixir_job("Migrations",
+      needs: :compile,
+      services: [
+        db: db_service()
+      ],
+      steps: [
+        [
+          name: "Check if migrations are reversible",
+          env: [MIX_ENV: "test"],
+          run: "mix ci.migrations"
+        ]
+      ]
+    )
+  end
+
   defp prettier_job do
     [
       name: "Check formatting using Prettier",
@@ -385,6 +399,9 @@ defmodule GithubWorkflows do
   defp test_job do
     elixir_job("Test",
       needs: :compile,
+      services: [
+        db: db_service()
+      ],
       steps: [
         [
           name: "Run tests",
@@ -395,66 +412,6 @@ defmodule GithubWorkflows do
         ]
       ]
     )
-  end
-
-  defp test_linux_script_job do
-    test_shell_script_job(
-      "Linux",
-      "ubuntu-latest",
-      "sudo apt-get update && sudo apt-get install -y expect"
-    )
-  end
-
-  defp test_macos_script_job do
-    test_shell_script_job("macOS", "macos-latest", "brew install expect")
-  end
-
-  defp test_shell_script_job(os, runs_on, expect_install_command) do
-    [
-      name: "Test #{os} script",
-      "runs-on": runs_on,
-      env: [TZ: "Africa/Kampala"],
-      steps: [
-        checkout_step(),
-        [
-          name: "Restore script result cache",
-          uses: "actions/cache@v3",
-          id: "result_cache",
-          with: [
-            key:
-              "${{ runner.os }}-script-${{ hashFiles('test/scripts/script.exp') }}-${{ hashFiles('priv/static/#{os}.sh') }}",
-            path: "priv/static/#{os}.sh"
-          ]
-        ],
-        [
-          name: "Install expect tool",
-          if: "steps.result_cache.outputs.cache-hit != 'true'",
-          run: expect_install_command
-        ],
-        [
-          name: "Test the script",
-          if: "steps.result_cache.outputs.cache-hit != 'true'",
-          run: "cd test/scripts && expect script.exp #{os}.sh"
-        ],
-        [
-          name: "Generate an app and start the server",
-          if: "steps.result_cache.outputs.cache-hit != 'true'",
-          run: "/bin/zsh -c 'source ~/.zshrc && make -f test/scripts/Makefile'"
-        ],
-        [
-          name: "Check HTTP status code",
-          if: "steps.result_cache.outputs.cache-hit != 'true'",
-          uses: "nick-fields/retry@v2",
-          with: [
-            command:
-              "INPUT_SITES='[\"http://localhost:4000\"]' INPUT_EXPECTED='[200]' ./test/scripts/check_status_code.sh",
-            max_attempts: 7,
-            retry_wait_seconds: 5,
-            timeout_seconds: 1
-          ]
-        ]
-      ]
-    ]
   end
 
   defp unused_deps_job do
@@ -513,6 +470,16 @@ defmodule GithubWorkflows do
     [
       name: @environment_name,
       url: "https://#{@preview_app_host}"
+    ]
+  end
+
+  defp db_service do
+    [
+      image: "postgres:13",
+      ports: ["5432:5432"],
+      env: [POSTGRES_PASSWORD: "postgres"],
+      options:
+        "--health-cmd pg_isready --health-interval 10s --health-timeout 5s --health-retries 5"
     ]
   end
 end

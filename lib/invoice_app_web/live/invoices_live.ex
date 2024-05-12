@@ -3,6 +3,8 @@ defmodule InvoiceAppWeb.InvoicesLive do
 
   @impl Phoenix.LiveView
   def mount(_params, _session, socket) do
+    user = socket.assigns.current_user
+    socket = assign(socket, user: user)
     {:ok, stream(socket, :invoices, [])}
   end
 
@@ -11,6 +13,9 @@ defmodule InvoiceAppWeb.InvoicesLive do
     ~H"""
     <div>
       <h2>There is nothing here</h2>
+      <%= inspect(@current_user) %>
+
+      <p>Create an invoice by clicking the New button and get started</p>
 
       <ul class="relative z-10 flex items-center gap-4 px-4 sm:px-6 lg:px-8 justify-end">
         <%= if @current_user do %>

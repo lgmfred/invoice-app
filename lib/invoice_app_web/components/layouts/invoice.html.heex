@@ -1,0 +1,71 @@
+<main class="flex h-full">
+  <!-- Static sidebar for desktop -->
+  <div class="hidden lg:flex lg:flex-shrink-0">
+    <div class="flex w-20 flex-col">
+      <div class="flex min-h-screen flex-1 flex-col overflow-y-auto bg-[#373B53] rounded-tr-xl">
+        <div class="flex-1">
+          <div class="flex items-center justify-center bg-[#7C5DFA] rounded-tr-xl rounded-br-xl py-4">
+            <img class="h-8 w-auto" src={~p"/images/logo.svg?color=white"} alt="Your Company" />
+          </div>
+        </div>
+        <div class="flex flex-shrink-0 pb-5">
+          <div class="bg-white">
+            <img class="dark:hidden" src={~p"/images/dark-mode.svg"} alt="Dark" />
+            <img src={~p"/images/light-mode.svg"} alt="Light" />
+          </div>
+          <a href="#" class="w-full flex-shrink-0">
+            <img
+              class="mx-auto block h-10 w-10 rounded-full"
+              src={@current_user.avatar_url}
+              alt=""
+            />
+            <div class="sr-only">
+              <p>Annie Dembo</p>
+              <p>Account settings</p>
+            </div>
+          </a>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="flex min-w-0 flex-1 flex-col overflow-hidden">
+    <!-- Mobile top navigation -->
+    <div class="lg:hidden">
+      <div class="flex items-center justify-between bg-[#373B53] overflow-x-auto">
+        <div>
+          <div class="flex items-center justify-center bg-[#7C5DFA] rounded-tr-xl rounded-br-xl p-4">
+            <img class="h-8 w-auto" src={~p"/images/logo.svg?color=white"} alt="Your Company" />
+          </div>
+        </div>
+        <div class="flex flex-shrink-0 pr-5">
+          <a href="#" class="w-full flex-shrink-0">
+            <img
+              class="mx-auto block h-10 w-10 rounded-full"
+              src={@current_user.avatar_url}
+              alt=""
+            />
+            <div class="sr-only">
+              <p>Annie Dembo</p>
+              <p>Account settings</p>
+            </div>
+          </a>
+        </div>
+      </div>
+    </div>
+
+    <main class="flex flex-1 overflow-hidden">
+      <div class="flex flex-1 flex-col overflow-y-auto xl:overflow-hidden">
+        <div class="flex flex-1 xl:overflow-hidden">
+          <!-- Main content -->
+          <div class="flex-1 xl:overflow-y-auto">
+            <div class="mx-auto max-w-3xl px-4 py-10 sm:px-6 lg:px-8 lg:py-12">
+              <.flash_group flash={@flash} />
+              <%= @inner_content %>
+            </div>
+          </div>
+        </div>
+      </div>
+    </main>
+  </div>
+</main>

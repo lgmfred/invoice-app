@@ -4,9 +4,12 @@
     <div class="flex w-20 flex-col">
       <div class="flex min-h-screen flex-1 flex-col overflow-y-auto bg-[#373B53] rounded-r-xl">
         <div class="flex-1">
-          <div class="flex items-center justify-center bg-[#7C5DFA] rounded-tr-xl rounded-br-xl py-4">
+          <.link
+            navigate={~p"/invoices"}
+            class="flex items-center justify-center bg-[#7C5DFA] rounded-tr-xl rounded-br-xl py-4"
+          >
             <img class="h-8 w-auto" src={~p"/images/logo.svg?color=white"} alt="Invoice Company" />
-          </div>
+          </.link>
         </div>
         <div class="flex flex-col flex-shrink-0 pb-5">
           <a href="#" class="mx-auto mb-5">
@@ -21,13 +24,16 @@
               <div class="w-full border-t border-[#494E6E]"></div>
             </div>
           </div>
-          <a href="#" class="mx-auto mt-5 flex-shrink-0">
+          <button
+            phx-click={Phoenix.LiveView.JS.toggle(to: "#user-menu-button")}
+            class="mx-auto mt-5 flex-shrink-0"
+          >
             <img class="block h-10 w-10 rounded-full" src={@current_user.avatar_url} alt="" />
             <div class="sr-only">
               <p><%= @current_user.full_name %></p>
               <p>Account settings</p>
             </div>
-          </a>
+          </button>
         </div>
       </div>
     </div>
@@ -37,9 +43,12 @@
     <!-- Mobile top navigation -->
     <div class="lg:hidden">
       <div class="h-16 flex items-center justify-between bg-[#373B53] overflow-x-auto">
-        <div class="w-20 h-full flex items-center justify-center bg-[#7C5DFA] rounded-r-xl">
+        <.link
+          navigate={~p"/invoices"}
+          class="w-20 h-full flex items-center justify-center bg-[#7C5DFA] rounded-r-xl"
+        >
           <img class="h-8 w-auto" src={~p"/images/logo.svg?color=white"} alt="Invoice Company" />
-        </div>
+        </.link>
         <div class="h-full flex flex-shrink-0 pr-5">
           <a href="#" class="my-auto mr-5">
             <img class="inline-block dark:hidden" src={~p"/images/dark-mode.svg"} alt="Dark" />
@@ -53,13 +62,16 @@
               <div class="h-full border-l border-[#494E6E]"></div>
             </div>
           </div>
-          <a href="#" class="my-auto ml-5 flex flex-shrink-0">
+          <button
+            phx-click={Phoenix.LiveView.JS.toggle(to: "#user-menu-button")}
+            class="my-auto ml-5 flex flex-shrink-0"
+          >
             <img class="block h-10 w-10 rounded-full" src={@current_user.avatar_url} alt="" />
             <div class="sr-only">
               <p><%= @current_user.full_name %></p>
               <p>Account settings</p>
             </div>
-          </a>
+          </button>
         </div>
       </div>
     </div>
@@ -70,6 +82,59 @@
           <!-- Main content -->
           <div class="flex-1 xl:overflow-y-auto">
             <div class="mx-auto max-w-3xl px-4 py-10 sm:px-6 lg:px-8 lg:py-12">
+              <!-- User menu pop-up -->
+              <div
+                class="hidden flex-col text-center absolute md:rounded-xl lg:rounded-r-xl md:w-96 top-16 md:top-[70px] lg:top-auto right-0 md:right-6 md:left-auto lg:left-20 lg:right-auto left-0 lg:bottom-0 w-full origin-top-right lg:origin-bottom-left bg-white py-1 shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none"
+                id="user-menu-button"
+                role="menu"
+                aria-orientation="vertical"
+                aria-labelledby="user-menu-button"
+                tabindex="-1"
+              >
+                <div class="flex flex-1 flex-col p-8">
+                  <img
+                    class="mx-auto h-20 w-20 flex-shrink-0 rounded-full"
+                    src={@current_user.avatar_url}
+                    alt=""
+                  />
+                  <h3 class="mt-6 text-2xl font-medium text-gray-900">
+                    <%= @current_user.full_name %>
+                  </h3>
+                  <dl class="mt-1 flex flex-grow flex-col justify-between">
+                    <dt class="sr-only">Email</dt>
+                    <dd class="text-sm text-gray-500"><%= @current_user.email %></dd>
+                  </dl>
+                </div>
+                <nav class="flex pb-8 px-4 sm:px-6 lg:px-0">
+                  <ul role="list" class="flex flex-col mx-auto gap-x-3 gap-y-1 whitespace-nowrap">
+                    <li>
+                      <.link
+                        navigate={~p"/invoices"}
+                        class="text-gray-700 hover:text-indigo-600 hover:bg-gray-50 group flex justify-center gap-x-3 rounded-md py-2 pl-2 pr-3 text-sm leading-6 font-semibold"
+                      >
+                        <img class="inline-block" src="/images/dashboard.svg" alt="" /> Dashboard
+                      </.link>
+                    </li>
+                    <li>
+                      <.link
+                        navigate={~p"/users/settings"}
+                        class="text-gray-700 hover:text-indigo-600 hover:bg-gray-50 group flex gap-x-3 rounded-md py-2 pl-2 pr-3 text-sm leading-6 font-semibold"
+                      >
+                        <img src="/images/settings.svg" alt="" /> Settings
+                      </.link>
+                    </li>
+                    <li>
+                      <.link
+                        href={~p"/users/log_out"}
+                        method="delete"
+                        class="text-gray-700 hover:text-indigo-600 hover:bg-gray-50 group flex gap-x-3 rounded-md py-2 pl-2 pr-3 text-sm leading-6 font-semibold"
+                      >
+                        <img src="/images/sign-out.svg" alt="" /> Sign out
+                      </.link>
+                    </li>
+                  </ul>
+                </nav>
+              </div>
               <.flash_group flash={@flash} />
               <%= @inner_content %>
             </div>

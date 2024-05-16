@@ -1,8 +1,8 @@
 <main class="flex h-full">
   <!-- Static sidebar for desktop -->
   <div class="hidden lg:flex lg:flex-shrink-0">
-    <div class="flex w-20 flex-col">
-      <div class="flex min-h-screen flex-1 flex-col overflow-y-auto bg-[#373B53] rounded-r-xl">
+    <div class="flex w-20 flex-col bg-[#373B53] dark:bg-[#1E2139] rounded-r-xl">
+      <div class="flex min-h-screen flex-1 flex-col overflow-y-auto">
         <div class="flex-1">
           <.link
             navigate={~p"/invoices"}
@@ -12,13 +12,30 @@
           </.link>
         </div>
         <div class="flex flex-col flex-shrink-0 pb-5">
-          <a href="#" class="mx-auto mb-5">
-            <img class="inline-block dark:hidden" src={~p"/images/dark-mode.svg"} alt="Dark" />
-            <img class="hidden dark:inline-block" src={~p"/images/light-mode.svg"} alt="Light" />
+          <button
+            phx-click={
+              Phoenix.LiveView.JS.dispatch("toogle-darkmode")
+              |> Phoenix.LiveView.JS.toggle(to: "#dark-mode-image-lg")
+              |> Phoenix.LiveView.JS.toggle(to: "#light-mode-image-lg")
+            }
+            class="mx-auto mb-5"
+          >
+            <img
+              id="dark-mode-image-lg"
+              class="inline-block dark:hidden"
+              src={~p"/images/moon.svg"}
+              alt="Dark"
+            />
+            <img
+              id="light-mode-image-lg"
+              class="hidden dark:inline-block"
+              src={~p"/images/sun.svg"}
+              alt="Light"
+            />
             <div class="sr-only">
               <p>Toggle dark/light mode</p>
             </div>
-          </a>
+          </button>
           <div class="relative">
             <div class="absolute inset-0 flex items-center" aria-hidden="true">
               <div class="w-full border-t border-[#494E6E]"></div>
@@ -42,7 +59,7 @@
   <div class="flex min-w-0 flex-1 flex-col overflow-hidden">
     <!-- Mobile top navigation -->
     <div class="lg:hidden">
-      <div class="h-16 flex items-center justify-between bg-[#373B53] overflow-x-auto">
+      <div class="h-16 flex items-center justify-between bg-[#373B53] dark:bg-[#1E2139] overflow-x-auto">
         <.link
           navigate={~p"/invoices"}
           class="w-20 h-full flex items-center justify-center bg-[#7C5DFA] rounded-r-xl"
@@ -50,13 +67,30 @@
           <img class="h-8 w-auto" src={~p"/images/logo.svg?color=white"} alt="Invoice Company" />
         </.link>
         <div class="h-full flex flex-shrink-0 pr-5">
-          <a href="#" class="my-auto mr-5">
-            <img class="inline-block dark:hidden" src={~p"/images/dark-mode.svg"} alt="Dark" />
-            <img class="hidden dark:inline-block" src={~p"/images/light-mode.svg"} alt="Light" />
+          <button
+            phx-click={
+              Phoenix.LiveView.JS.dispatch("toogle-darkmode")
+              |> Phoenix.LiveView.JS.toggle(to: "#dark-mode-image-sm")
+              |> Phoenix.LiveView.JS.toggle(to: "#light-mode-image-sm")
+            }
+            class="my-auto mr-5"
+          >
+            <img
+              id="dark-mode-image-sm"
+              class="inline-block dark:hidden"
+              src={~p"/images/moon.svg"}
+              alt="Dark"
+            />
+            <img
+              id="light-mode-image-sm"
+              class="hidden dark:inline-block"
+              src={~p"/images/sun.svg"}
+              alt="Light"
+            />
             <div class="sr-only">
               <p>Toggle dark/light mode</p>
             </div>
-          </a>
+          </button>
           <div class="relative">
             <div class="absolute inset-0 flex items-center" aria-hidden="true">
               <div class="h-full border-l border-[#494E6E]"></div>
@@ -84,7 +118,7 @@
             <div class="mx-auto max-w-3xl px-4 py-10 sm:px-6 lg:px-8 lg:py-12">
               <!-- User menu pop-up -->
               <div
-                class="hidden flex-col text-center absolute md:rounded-xl lg:rounded-r-xl md:w-96 top-16 md:top-[70px] lg:top-auto right-0 md:right-6 md:left-auto lg:left-20 lg:right-auto left-0 lg:bottom-0 w-full origin-top-right lg:origin-bottom-left bg-white py-1 shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none"
+                class="hidden flex-col text-center absolute md:rounded-xl lg:rounded-r-xl md:w-96 top-16 md:top-[70px] lg:top-auto right-0 md:right-6 md:left-auto lg:left-20 lg:right-auto left-0 lg:bottom-0 w-full origin-top-right lg:origin-bottom-left py-1 shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none"
                 id="user-menu-button"
                 role="menu"
                 aria-orientation="vertical"

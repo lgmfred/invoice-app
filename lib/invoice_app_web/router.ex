@@ -82,6 +82,7 @@ defmodule InvoiceAppWeb.Router do
     ]
 
     live_session :invoices,
+      root_layout: {InvoiceAppWeb.Layouts, :main},
       layout: {InvoiceAppWeb.Layouts, :invoice},
       on_mount: [
         {InvoiceAppWeb.UserAuth, :ensure_authenticated},

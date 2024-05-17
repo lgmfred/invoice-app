@@ -2,271 +2,201 @@ defmodule InvoiceAppWeb.SettingsLive do
   use InvoiceAppWeb, :live_view
 
   def mount(_params, _session, socket) do
-    {:ok, socket}
+    settings_tabs = [personal: "Personal", password: "Password", email: "Email notifications"]
+    {:ok, assign(socket, tabs: settings_tabs)}
+  end
+
+  def handle_params(%{"tab" => tab}, _uri, socket) do
+    tab = String.to_existing_atom(tab)
+    selected_tab = Enum.find(socket.assigns.tabs, fn {key, _val} -> key == tab end)
+    {:noreply, assign(socket, selected_tab: selected_tab)}
+  end
+
+  def handle_params(_params, _uri, socket) do
+    {:noreply, assign(socket, selected_tab: hd(socket.assigns.tabs))}
   end
 
   def render(assigns) do
     ~H"""
-    <div class="bg-gray-900">
-      <h1>Settings</h1>
-      <header class="border-b border-white/5">
-        <!-- Secondary navigation -->
-        <nav class="flex overflow-x-auto py-4">
-          <ul
-            role="list"
-            class="flex min-w-full flex-none gap-x-6 px-4 text-sm font-semibold leading-6 text-gray-400 sm:px-6 lg:px-8"
+    <div class="flex-1 overflow-y-auto">
+      <.settings_header tabs={@tabs} selected_tab={@selected_tab} />
+      <.address_form
+        :if={@selected_tab == {:personal, "Personal"}}
+        current_user={@current_user}
+        tabs={@tabs}
+        selected_tab={@selected_tab}
+      />
+    </div>
+    """
+  end
+
+  def settings_header(assigns) do
+    ~H"""
+    <header class="border-b border-white/5">
+      <h1 class="text-2xl font-bold tracking-tight">Settings</h1>
+      <!-- Secondary navigation -->
+      <nav class="flex overflow-x-auto py-4">
+        <ul
+          role="list"
+          class="flex min-w-full flex-none gap-x-6 text-sm font-semibold leading-6 text-gray-400"
+        >
+          <li :for={{id, text} = tab <- @tabs}>
+            <.link
+              patch={~p"/settings?#{[tab: id]}"}
+              class={if tab == @selected_tab, do: "text-indigo-400"}
+            >
+              <%= text %>
+            </.link>
+          </li>
+        </ul>
+      </nav>
+    </header>
+    """
+  end
+
+  def address_form(assigns) do
+    ~H"""
+    <div class="mx-auto max-w-3xl px-4 py-10 sm:px-6 lg:px-8 lg:py-12 rounded-md">
+      <form class="flex flex-col gap-4">
+        <%!-- Avatar render and update section --%>
+        <div class="flex gap-2 items-center justify-center">
+          <div class="flex-shrink-0">
+            <img class="h-16 w-16 rounded-full" src={@current_user.avatar_url} alt="" />
+          </div>
+          <h2 class="min-w-0 flex-1 font-semibold">
+            <%= @current_user.full_name %> / Profile information
+          </h2>
+        </div>
+        <div class="flex gap-4 justify-start">
+          <div class="relative">
+            <input
+              id="user-photo"
+              name="user-photo"
+              type="file"
+              class="peer absolute inset-0 h-full w-full rounded-full opacity-0"
+            />
+            <label
+              for="user-photo"
+              class="pointer-events-none block rounded-full bg-white px-3 py-2 text-sm font-semibold text-slate-900 shadow-sm ring-1 ring-inset ring-slate-300 peer-hover:bg-slate-50 peer-focus:ring-2 peer-focus:ring-blue-600"
+            >
+              <span>Upload an new photo</span>
+              <span class="sr-only"> user photo</span>
+            </label>
+          </div>
+          <button
+            type="button"
+            class="inline-flex justify-center rounded-full bg-gray-400 px-3 py-2 text-sm font-semibold shadow-sm hover:bg-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-slate-300"
           >
-            <li>
-              <a href="#" class="text-indigo-400">Personal</a>
-            </li>
-            <li>
-              <a href="#" class="">Password</a>
-            </li>
-            <li>
-              <a href="#" class="">Email notifications</a>
-            </li>
-          </ul>
-        </nav>
-      </header>
-      <!-- Settings forms -->
-      <div class="divide-y divide-white/5">
-        <div class="grid max-w-7xl grid-cols-1 gap-x-8 gap-y-10 px-4 py-16 sm:px-6 md:grid-cols-3 lg:px-8">
-          <form class="md:col-span-2">
-            <div class="grid grid-cols-1 gap-x-6 gap-y-8 sm:max-w-xl sm:grid-cols-6">
-              <div class="col-span-full flex items-center gap-x-8">
-                <img
-                  src="https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=facearea&facepad=2&w=256&h=256&q=80"
-                  alt=""
-                  class="h-24 w-24 flex-none rounded-lg bg-gray-800 object-cover"
-                />
-                <div>
-                  <button
-                    type="button"
-                    class="rounded-md bg-white/10 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-white/20"
-                  >
-                    Change avatar
-                  </button>
-                  <p class="mt-2 text-xs leading-5 text-gray-400">JPG, GIF or PNG. 1MB max.</p>
-                </div>
-              </div>
-
-              <div class="sm:col-span-3">
-                <label for="first-name" class="block text-sm font-medium leading-6 text-white">
-                  First name
-                </label>
-                <div class="mt-2">
-                  <input
-                    type="text"
-                    name="first-name"
-                    id="first-name"
-                    autocomplete="given-name"
-                    class="block w-full rounded-md border-0 bg-white/5 py-1.5 text-white shadow-sm ring-1 ring-inset ring-white/10 focus:ring-2 focus:ring-inset focus:ring-indigo-500 sm:text-sm sm:leading-6"
-                  />
-                </div>
-              </div>
-
-              <div class="sm:col-span-3">
-                <label for="last-name" class="block text-sm font-medium leading-6 text-white">
-                  Last name
-                </label>
-                <div class="mt-2">
-                  <input
-                    type="text"
-                    name="last-name"
-                    id="last-name"
-                    autocomplete="family-name"
-                    class="block w-full rounded-md border-0 bg-white/5 py-1.5 text-white shadow-sm ring-1 ring-inset ring-white/10 focus:ring-2 focus:ring-inset focus:ring-indigo-500 sm:text-sm sm:leading-6"
-                  />
-                </div>
-              </div>
-
-              <div class="col-span-full">
-                <label for="email" class="block text-sm font-medium leading-6 text-white">
-                  Email address
-                </label>
-                <div class="mt-2">
-                  <input
-                    id="email"
-                    name="email"
-                    type="email"
-                    autocomplete="email"
-                    class="block w-full rounded-md border-0 bg-white/5 py-1.5 text-white shadow-sm ring-1 ring-inset ring-white/10 focus:ring-2 focus:ring-inset focus:ring-indigo-500 sm:text-sm sm:leading-6"
-                  />
-                </div>
-              </div>
-
-              <div class="col-span-full">
-                <label for="username" class="block text-sm font-medium leading-6 text-white">
-                  Username
-                </label>
-                <div class="mt-2">
-                  <div class="flex rounded-md bg-white/5 ring-1 ring-inset ring-white/10 focus-within:ring-2 focus-within:ring-inset focus-within:ring-indigo-500">
-                    <span class="flex select-none items-center pl-3 text-gray-400 sm:text-sm">
-                      example.com/
-                    </span>
-                    <input
-                      type="text"
-                      name="username"
-                      id="username"
-                      autocomplete="username"
-                      class="flex-1 border-0 bg-transparent py-1.5 pl-1 text-white focus:ring-0 sm:text-sm sm:leading-6"
-                      placeholder="janesmith"
-                    />
-                  </div>
-                </div>
-              </div>
-
-              <div class="col-span-full">
-                <label for="timezone" class="block text-sm font-medium leading-6 text-white">
-                  Timezone
-                </label>
-                <div class="mt-2">
-                  <select
-                    id="timezone"
-                    name="timezone"
-                    class="block w-full rounded-md border-0 bg-white/5 py-1.5 text-white shadow-sm ring-1 ring-inset ring-white/10 focus:ring-2 focus:ring-inset focus:ring-indigo-500 sm:text-sm sm:leading-6 [&_*]:text-black"
-                  >
-                    <option>Pacific Standard Time</option>
-                    <option>Eastern Standard Time</option>
-                    <option>Greenwich Mean Time</option>
-                  </select>
-                </div>
-              </div>
-            </div>
-
-            <div class="mt-8 flex">
-              <button
-                type="submit"
-                class="rounded-md bg-indigo-500 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-indigo-400 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-500"
-              >
-                Save
-              </button>
-            </div>
-          </form>
+            Delete
+          </button>
         </div>
-
-        <div class="grid max-w-7xl grid-cols-1 gap-x-8 gap-y-10 px-4 py-16 sm:px-6 md:grid-cols-3 lg:px-8">
-          <div>
-            <h2 class="text-base font-semibold leading-7 text-white">Change password</h2>
-            <p class="mt-1 text-sm leading-6 text-gray-400">
-              Update your password associated with your account.
-            </p>
+        <h2 class="font-medium text-xl">Edit  Profile Information</h2>
+        <div class="grid grid-cols-1 gap-y-6 sm:grid-cols-6 sm:gap-x-6">
+          <div class="sm:col-span-3">
+            <label for="full-name" class="block text-sm font-medium leading-6 text-slate-900">
+              Name
+            </label>
+            <input
+              type="text"
+              name="full-name"
+              id="full-name"
+              autocomplete="full-name"
+              class="mt-2 block w-full rounded-md border-0 py-1.5 text-slate-900 shadow-sm ring-1 ring-inset ring-slate-300 placeholder:text-slate-400 focus:ring-2 focus:ring-inset focus:ring-blue-500 sm:text-sm sm:leading-6"
+            />
           </div>
 
-          <form class="md:col-span-2">
-            <div class="grid grid-cols-1 gap-x-6 gap-y-8 sm:max-w-xl sm:grid-cols-6">
-              <div class="col-span-full">
-                <label for="current-password" class="block text-sm font-medium leading-6 text-white">
-                  Current password
-                </label>
-                <div class="mt-2">
-                  <input
-                    id="current-password"
-                    name="current_password"
-                    type="password"
-                    autocomplete="current-password"
-                    class="block w-full rounded-md border-0 bg-white/5 py-1.5 text-white shadow-sm ring-1 ring-inset ring-white/10 focus:ring-2 focus:ring-inset focus:ring-indigo-500 sm:text-sm sm:leading-6"
-                  />
-                </div>
-              </div>
-
-              <div class="col-span-full">
-                <label for="new-password" class="block text-sm font-medium leading-6 text-white">
-                  New password
-                </label>
-                <div class="mt-2">
-                  <input
-                    id="new-password"
-                    name="new_password"
-                    type="password"
-                    autocomplete="new-password"
-                    class="block w-full rounded-md border-0 bg-white/5 py-1.5 text-white shadow-sm ring-1 ring-inset ring-white/10 focus:ring-2 focus:ring-inset focus:ring-indigo-500 sm:text-sm sm:leading-6"
-                  />
-                </div>
-              </div>
-
-              <div class="col-span-full">
-                <label for="confirm-password" class="block text-sm font-medium leading-6 text-white">
-                  Confirm password
-                </label>
-                <div class="mt-2">
-                  <input
-                    id="confirm-password"
-                    name="confirm_password"
-                    type="password"
-                    autocomplete="new-password"
-                    class="block w-full rounded-md border-0 bg-white/5 py-1.5 text-white shadow-sm ring-1 ring-inset ring-white/10 focus:ring-2 focus:ring-inset focus:ring-indigo-500 sm:text-sm sm:leading-6"
-                  />
-                </div>
-              </div>
-            </div>
-
-            <div class="mt-8 flex">
-              <button
-                type="submit"
-                class="rounded-md bg-indigo-500 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-indigo-400 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-500"
-              >
-                Save
-              </button>
-            </div>
-          </form>
-        </div>
-
-        <div class="grid max-w-7xl grid-cols-1 gap-x-8 gap-y-10 px-4 py-16 sm:px-6 md:grid-cols-3 lg:px-8">
-          <div>
-            <h2 class="text-base font-semibold leading-7 text-white">Log out other sessions</h2>
-            <p class="mt-1 text-sm leading-6 text-gray-400">
-              Please enter your password to confirm you would like to log out of your other sessions across all of your devices.
-            </p>
+          <div class="sm:col-span-3">
+            <label for="username" class="block text-sm font-medium leading-6 text-slate-900">
+              Username
+            </label>
+            <input
+              type="text"
+              name="username"
+              id="username"
+              autocomplete="username"
+              class="mt-2 block w-full rounded-md border-0 py-1.5 text-slate-900 shadow-sm ring-1 ring-inset ring-slate-300 placeholder:text-slate-400 focus:ring-2 focus:ring-inset focus:ring-blue-500 sm:text-sm sm:leading-6"
+            />
           </div>
 
-          <form class="md:col-span-2">
-            <div class="grid grid-cols-1 gap-x-6 gap-y-8 sm:max-w-xl sm:grid-cols-6">
-              <div class="col-span-full">
-                <label for="logout-password" class="block text-sm font-medium leading-6 text-white">
-                  Your password
-                </label>
-                <div class="mt-2">
-                  <input
-                    id="logout-password"
-                    name="password"
-                    type="password"
-                    autocomplete="current-password"
-                    class="block w-full rounded-md border-0 bg-white/5 py-1.5 text-white shadow-sm ring-1 ring-inset ring-white/10 focus:ring-2 focus:ring-inset focus:ring-indigo-500 sm:text-sm sm:leading-6"
-                  />
-                </div>
-              </div>
-            </div>
-
-            <div class="mt-8 flex">
-              <button
-                type="submit"
-                class="rounded-md bg-indigo-500 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-indigo-400 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-500"
-              >
-                Log out other sessions
-              </button>
-            </div>
-          </form>
-        </div>
-
-        <div class="grid max-w-7xl grid-cols-1 gap-x-8 gap-y-10 px-4 py-16 sm:px-6 md:grid-cols-3 lg:px-8">
-          <div>
-            <h2 class="text-base font-semibold leading-7 text-white">Delete account</h2>
-            <p class="mt-1 text-sm leading-6 text-gray-400">
-              No longer want to use our service? You can delete your account here. This action is not reversible. All information related to this account will be deleted permanently.
-            </p>
+          <div class="sm:col-span-6">
+            <label for="email-address" class="block text-sm font-medium leading-6 text-slate-900">
+              Email
+            </label>
+            <input
+              type="text"
+              name="email-address"
+              id="email-address"
+              autocomplete="email-address"
+              class="mt-2 block w-full rounded-md border-0 py-1.5 text-slate-900 shadow-sm ring-1 ring-inset ring-slate-300 placeholder:text-slate-400 focus:ring-2 focus:ring-inset focus:ring-blue-500 sm:text-sm sm:leading-6"
+            />
           </div>
 
-          <form class="flex items-start md:col-span-2">
+          <div class="sm:col-span-3">
+            <label for="country" class="block text-sm font-medium leading-6 text-slate-900">
+              Country
+            </label>
+            <input
+              type="text"
+              name="country"
+              id="country"
+              autocomplete="country-name"
+              class="mt-2 block w-full rounded-md border-0 py-1.5 text-slate-900 shadow-sm ring-1 ring-inset ring-slate-300 placeholder:text-slate-400 focus:ring-2 focus:ring-inset focus:ring-blue-500 sm:text-sm sm:leading-6"
+            />
+          </div>
+
+          <div class="sm:col-span-3">
+            <label for="city" class="block text-sm font-medium leading-6 text-slate-900">
+              City
+            </label>
+            <input
+              type="text"
+              name="city"
+              id="city"
+              autocomplete="city-name"
+              class="mt-2 block w-full rounded-md border-0 py-1.5 text-slate-900 shadow-sm ring-1 ring-inset ring-slate-300 placeholder:text-slate-400 focus:ring-2 focus:ring-inset focus:ring-blue-500 sm:text-sm sm:leading-6"
+            />
+          </div>
+
+          <div class="sm:col-span-3">
+            <label for="street-address" class="block text-sm font-medium leading-6 text-slate-900">
+              Street Address
+            </label>
+            <input
+              type="text"
+              name="street-address"
+              id="street-address"
+              autocomplete="street-address"
+              class="mt-2 block w-full rounded-md border-0 py-1.5 text-slate-900 shadow-sm ring-1 ring-inset ring-slate-300 placeholder:text-slate-400 focus:ring-2 focus:ring-inset focus:ring-blue-500 sm:text-sm sm:leading-6"
+            />
+          </div>
+
+          <div class="sm:col-span-3">
+            <label for="postal-code" class="block text-sm font-medium leading-6 text-slate-900">
+              Postal Code
+            </label>
+            <input
+              type="text"
+              name="postal-code"
+              id="postal-code"
+              class="mt-2 block w-full rounded-md border-0 py-1.5 text-slate-900 shadow-sm ring-1 ring-inset ring-slate-300 placeholder:text-slate-400 focus:ring-2 focus:ring-inset focus:ring-blue-500 sm:text-sm sm:leading-6"
+            />
+          </div>
+          <div class="sm:col-span-6 flex flex-col gap-4 sm:flex-row sm:justify-between">
             <button
               type="submit"
-              class="rounded-md bg-red-500 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-red-400"
+              class="inline-flex sm:order-last justify-center rounded-full bg-blue-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-blue-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600"
             >
-              Yes, delete my account
+              Save changes
             </button>
-          </form>
+            <button
+              type="button"
+              class="rounded-full bg-white px-3 py-2 text-sm font-semibold text-[#EC5757] shadow-sm ring-1 ring-inset ring-slate-300 hover:bg-slate-50"
+            >
+              Delete Account
+            </button>
+          </div>
         </div>
-      </div>
+      </form>
     </div>
     """
   end

@@ -56,10 +56,10 @@
     </div>
   </div>
 
-  <div class="flex min-w-0 flex-1 flex-col overflow-hidden">
+  <div class="flex min-w-0 flex-1 flex-col">
     <!-- Mobile top navigation -->
     <div class="lg:hidden">
-      <div class="h-16 flex items-center justify-between bg-[#373B53] dark:bg-[#1E2139] overflow-x-auto">
+      <div class="h-16 flex items-center justify-between bg-[#373B53] dark:bg-[#1E2139] overflow-y-auto">
         <.link
           navigate={~p"/invoices"}
           class="w-20 h-full flex items-center justify-center bg-[#7C5DFA] rounded-r-xl"
@@ -109,72 +109,69 @@
         </div>
       </div>
     </div>
-
-    <main class="flex flex-1 overflow-hidden">
-      <div class="flex flex-1 flex-col overflow-y-auto xl:overflow-hidden">
-        <div class="flex flex-1 xl:overflow-hidden">
-          <!-- Main content -->
-          <div class="flex-1 xl:overflow-y-auto">
-            <div class="mx-auto max-w-3xl px-4 py-10 sm:px-6 lg:px-8 lg:py-12">
-              <!-- User menu pop-up -->
-              <div
-                class="
-                hidden flex-col text-center text-[#0C0E16B2] dark:text-[#DFE3FA] absolute md:rounded-xl 
+    <!-- User menu pop-up -->
+    <div
+      class="hidden flex-col text-center text-[#0C0E16B2] dark:text-[#DFE3FA] absolute md:rounded-xl 
                 lg:rounded-l-none lg:rounded-r-xl md:w-96 top-16 md:top-[70px] lg:top-auto right-0 md:right-6 
                 md:left-auto lg:left-20 lg:right-auto left-0 lg:bottom-0 w-full origin-top-right lg:origin-bottom-left 
-                py-1 bg-[#F8F8FB] dark:bg-[#141625] shadow-lg shadow-[#1E21391A] dark:shadow-[#7C5DFA1A] ring-1 
-                ring-black ring-opacity-5 focus:outline-none
-                "
-                id="user-menu-button"
-                role="menu"
-                aria-orientation="vertical"
-                aria-labelledby="user-menu-button"
-                tabindex="-1"
-              >
-                <div class="flex flex-1 flex-col p-8">
-                  <img
-                    class="mx-auto h-20 w-20 flex-shrink-0 rounded-full"
-                    src={@current_user.avatar_url}
-                    alt=""
-                  />
-                  <h3 class="mt-6 text-2xl font-medium">
-                    <%= @current_user.full_name %>
-                  </h3>
-                  <dl class="mt-1 flex flex-grow flex-col justify-between">
-                    <dt class="sr-only">Email</dt>
-                    <dd class="text-sm text-gray-500"><%= @current_user.email %></dd>
-                  </dl>
-                </div>
-                <nav class="flex pb-8 px-4 sm:px-6 lg:px-0">
-                  <ul role="list" class="flex flex-col mx-auto gap-x-3 gap-y-1 whitespace-nowrap">
-                    <li>
-                      <.link
-                        navigate={~p"/invoices"}
-                        class="hover:text-indigo-600 hover:bg-gray-50 group flex justify-center gap-x-3 rounded-md py-2 pl-2 pr-3 text-sm leading-6 font-semibold"
-                      >
-                        <img class="inline-block" src="/images/dashboard.svg" alt="" /> Dashboard
-                      </.link>
-                    </li>
-                    <li>
-                      <.link
-                        navigate={~p"/settings"}
-                        class="hover:text-indigo-600 hover:bg-gray-50 group flex gap-x-3 rounded-md py-2 pl-2 pr-3 text-sm leading-6 font-semibold"
-                      >
-                        <img src="/images/settings.svg" alt="" /> Settings
-                      </.link>
-                    </li>
-                    <li>
-                      <.link
-                        href={~p"/users/log_out"}
-                        method="delete"
-                        class="hover:text-indigo-600 hover:bg-gray-50 group flex gap-x-3 rounded-md py-2 pl-2 pr-3 text-sm leading-6 font-semibold"
-                      >
-                        <img src="/images/sign-out.svg" alt="" /> Sign out
-                      </.link>
-                    </li>
-                  </ul>
-                </nav>
-              </div>
+                py-1 bg-[#F8F8FB] dark:bg-[#141625] shadow-lg shadow-[#1E21391A] dark:shadow-[#7C5DFA1A] ring-1 ring-black ring-opacity-5 focus:outline-none"
+      id="user-menu-button"
+      role="menu"
+      aria-orientation="vertical"
+      aria-labelledby="user-menu-button"
+      tabindex="-1"
+    >
+      <div class="flex flex-1 flex-col p-8">
+        <img
+          class="mx-auto h-20 w-20 flex-shrink-0 rounded-full"
+          src={@current_user.avatar_url}
+          alt=""
+        />
+        <h3 class="mt-6 text-2xl font-medium">
+          <%= @current_user.full_name %>
+        </h3>
+        <dl class="mt-1 flex flex-grow flex-col justify-between">
+          <dt class="sr-only">Email</dt>
+          <dd class="text-sm text-gray-500"><%= @current_user.email %></dd>
+        </dl>
+      </div>
+      <nav class="flex pb-8 px-4 sm:px-6 lg:px-0">
+        <ul role="list" class="flex flex-col mx-auto gap-x-3 gap-y-1 whitespace-nowrap">
+          <li>
+            <.link
+              navigate={~p"/invoices"}
+              class="hover:text-indigo-600 hover:bg-gray-50 group flex justify-center gap-x-3 rounded-md py-2 pl-2 pr-3 text-sm leading-6 font-semibold"
+            >
+              <img class="inline-block" src="/images/dashboard.svg" alt="" /> Dashboard
+            </.link>
+          </li>
+          <li>
+            <.link
+              navigate={~p"/settings"}
+              class="hover:text-indigo-600 hover:bg-gray-50 group flex gap-x-3 rounded-md py-2 pl-2 pr-3 text-sm leading-6 font-semibold"
+            >
+              <img src="/images/settings.svg" alt="" /> Settings
+            </.link>
+          </li>
+          <li>
+            <.link
+              href={~p"/users/log_out"}
+              method="delete"
+              class="hover:text-indigo-600 hover:bg-gray-50 group flex gap-x-3 rounded-md py-2 pl-2 pr-3 text-sm leading-6 font-semibold"
+            >
+              <img src="/images/sign-out.svg" alt="" /> Sign out
+            </.link>
+          </li>
+        </ul>
+      </nav>
+    </div>
+
+    <main class="flex flex-1 overflow-hidden">
+      <div class="flex flex-1 flex-col overflow-y-auto">
+        <div class="flex flex-1">
+          <!-- Main content -->
+          <div class="flex-1 overflow-y-auto">
+            <div class="mx-auto max-w-3xl px-4 py-10 sm:px-6 lg:px-8 lg:py-12">
               <.flash_group flash={@flash} />
               <%= @inner_content %>
             </div>

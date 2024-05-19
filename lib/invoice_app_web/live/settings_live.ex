@@ -1,6 +1,8 @@
 defmodule InvoiceAppWeb.SettingsLive do
   use InvoiceAppWeb, :live_view
 
+  alias Phoenix.LiveView.JS
+
   def mount(_params, _session, socket) do
     settings_tabs = [personal: "Personal", password: "Password", email: "Email notifications"]
     {:ok, assign(socket, tabs: settings_tabs)}
@@ -38,6 +40,7 @@ defmodule InvoiceAppWeb.SettingsLive do
         tabs={@tabs}
         selected_tab={@selected_tab}
       />
+      <.delete_account_modal current_user={@current_user} />
     </div>
     """
   end
@@ -212,6 +215,7 @@ defmodule InvoiceAppWeb.SettingsLive do
               Save changes
             </button>
             <button
+              phx-click={show_modal("delete-account")}
               type="button"
               class="rounded-full px-3 py-2 text-sm font-semibold text-[#EC5757] hover:bg-[#7E88C3] dark:hover:bg-[#303559]"
             >
@@ -293,6 +297,7 @@ defmodule InvoiceAppWeb.SettingsLive do
               Save changes
             </button>
             <button
+              phx-click={show_modal("delete-account")}
               type="button"
               class="rounded-full px-3 py-2 text-sm font-semibold text-[#EC5757] hover:bg-[#7E88C3] dark:hover:bg-[#303559]"
             >
@@ -372,7 +377,9 @@ defmodule InvoiceAppWeb.SettingsLive do
             >
               Save changes
             </button>
+
             <button
+              phx-click={JS.show(to: "#delete-account")}
               type="button"
               class="rounded-full px-3 py-2 text-sm font-semibold text-[#EC5757] hover:bg-[#7E88C3] dark:hover:bg-[#303559]"
             >
@@ -394,6 +401,72 @@ defmodule InvoiceAppWeb.SettingsLive do
       <h2 class="min-w-0 flex-1 font-semibold">
         <%= @current_user.full_name %> / Profile information
       </h2>
+    </div>
+    """
+  end
+
+  def delete_account_modal(assigns) do
+    ~H"""
+    <div
+      id="delete-account"
+      class="relative hidden z-10"
+      aria-labelledby="delete-account"
+      role="dialog"
+      aria-modal="false"
+    >
+      <div
+        phx-click={JS.hide(to: "#delete-account")}
+        class="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity"
+      >
+      </div>
+      <div class="fixed inset-0 z-10 w-screen overflow-y-auto">
+        <div class="flex min-h-full items-end justify-center p-4 items-center sm:p-0">
+          <div class="relative transform overflow-hidden rounded-lg bg-white dark:bg-[#1E2139] px-4 pb-4 pt-5 shadow-xl transition-all sm:my-8 sm:w-full sm:max-w-lg sm:p-6">
+            <div>
+              <h2 class="text-xl font-semibold leading-6" id="modal-title">
+                Delete Account
+              </h2>
+              <div class="mt-3 sm:mt-5">
+                <h4 class="text-base font-semibold leading-6" id="modal-title">
+                  Would you like to delete your Invoice account (<span class="text-[#7C5DFA]">@<%= @current_user.username %></span>)?
+                </h4>
+                <div class="mt-2">
+                  <p class="text-sm">
+                    Deleting your account will remove all your content and data associated with your Invoice profile. To confirm the permanent deletion, type your email address (“<span class="font-bold"><%= @current_user.email %></span>”) below.
+                  </p>
+                </div>
+              </div>
+            </div>
+            <div class="sm:col-span-6">
+              <label for="email-address" class="sr-only">
+                Email
+              </label>
+              <input
+                type="text"
+                name="email-address"
+                id="email-address"
+                autocomplete="email-address"
+                class="mt-2 block w-full rounded-md border-0 py-1.5 font-bold dark:bg-[#303559] shadow-sm ring-1 ring-inset ring-[#DFE3FA] dark:ring-[#303559] placeholder:text-slate-400 focus:ring-1 focus:ring-inset focus:ring-[#0C0E16] dark:focus:ring-white sm:text-sm sm:leading-6"
+              />
+            </div>
+            <div class="mt-4 flex gap-4 flex-col justify-center md:flex-row md:justify-end">
+              <button
+                type="submit"
+                class="inline-flex md:px-6 justify-center rounded-full bg-blue-600 px-3 py-2 font-semibold text-white shadow-sm hover:bg-blue-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600"
+              >
+                Ok
+              </button>
+              <button
+                phx-click={JS.hide(to: "#delete-account")}
+                type="button"
+                class="inline-flex justify-center md:justify-end rounded-full px-3 py-2 font-semibold text-[#7C5DFA] shadow-sm ring-1 ring-inset ring-[#7C5DFA] hover:bg-gray-50"
+              >
+                Cancel
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
     """
   end

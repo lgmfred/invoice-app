@@ -3,21 +3,25 @@ defmodule InvoiceAppWeb.SettingsLive do
 
   alias Phoenix.LiveView.JS
 
+  @impl Phoenix.LiveView
   def mount(_params, _session, socket) do
     settings_tabs = [personal: "Personal", password: "Password", email: "Email notifications"]
-    {:ok, assign(socket, tabs: settings_tabs)}
+    {:ok, assign(socket, :tabs, settings_tabs)}
   end
 
+  @impl Phoenix.LiveView
   def handle_params(%{"tab" => tab}, _uri, socket) do
     tab = String.to_existing_atom(tab)
     selected_tab = Enum.find(socket.assigns.tabs, fn {key, _val} -> key == tab end)
-    {:noreply, assign(socket, selected_tab: selected_tab)}
+    {:noreply, assign(socket, :selected_tab, selected_tab)}
   end
 
+  @impl Phoenix.LiveView
   def handle_params(_params, _uri, socket) do
-    {:noreply, assign(socket, selected_tab: hd(socket.assigns.tabs))}
+    {:noreply, assign(socket, :selected_tab, hd(socket.assigns.tabs))}
   end
 
+  @impl Phoenix.LiveView
   def render(assigns) do
     ~H"""
     <div class="flex-1 overflow-y-auto">

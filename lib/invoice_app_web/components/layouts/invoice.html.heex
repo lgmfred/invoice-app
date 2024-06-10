@@ -1,6 +1,6 @@
 <main class="flex h-full">
   <!-- Static sidebar for desktop -->
-  <div class="hidden lg:flex lg:flex-shrink-0">
+  <div class="hidden lg:fixed lg:inset-y-0 lg:z-50 lg:flex lg:w-72 lg:flex-col">
     <div class="flex w-20 flex-col bg-[#373B53] dark:bg-[#1E2139] rounded-r-xl">
       <div class="flex min-h-screen flex-1 flex-col overflow-y-auto">
         <div class="flex-1">
@@ -58,7 +58,7 @@
 
   <div class="flex min-w-0 flex-1 flex-col">
     <!-- Mobile top navigation -->
-    <div class="lg:hidden">
+    <div class="sticky top-0 z-40 lg:hidden">
       <div class="h-16 flex items-center justify-between bg-[#373B53] dark:bg-[#1E2139] overflow-y-auto">
         <.link
           navigate={~p"/invoices"}

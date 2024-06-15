@@ -58,16 +58,29 @@ defmodule InvoiceAppWeb.InvoicesLive do
     ~H"""
     <.link
       href="#"
-      class="flex gap-4 justify-between items-center bg-white dark:bg-[#1E2139] py-4 px-8 rounded-md"
+      class="flex justify-between items-stretch md:items-center bg-white dark:bg-[#1E2139] py-4 px-8 rounded-md"
     >
-      <div class="flex gap-4 justify-between items-center">
-        <h3><span class="text-[#858BB2]">#</span><span class="font-bold">RT3080</span></h3>
-        <p class="text-[#858BB2]"><span>Due </span><span>19 Aug 2021</span></p>
-        <p class="text-[#858BB2] dark:text-white">Jensen Huang</p>
+      <div class="flex flex-col md:flex-row gap-4 justify-between items-start md:items-center">
+        <h3>
+          <span class="text-[#858BB2]">#</span><span class="font-bold">RT3080</span>
+        </h3>
+        <p class="text-[#858BB2] -mb-4 md:mb-0">
+          <span>Due </span>
+          <span>19 Aug 2021</span>
+        </p>
+        <p class="hidden md:inline-block text-[#858BB2] dark:text-white">Jensen Huang Dawg</p>
+        <h3 class="md:hidden font-bold -mb-2">
+          <span>£ </span>
+          <span>1,800.90</span>
+        </h3>
       </div>
 
-      <div class="flex gap-4 justify-between items-center font-bold">
-        <h3><span>£ </span><span>1,800.90</span></h3>
+      <div class="flex flex-col md:flex-row gap-4 justify-between md:justify-between items-end md:items-center font-bold">
+        <p class="md:hidden text-[#858BB2] dark:text-white font-normal">Jensen Huang Dawg</p>
+        <h3 class="hidden md:inline-block">
+          <span>£ </span>
+          <span>1,800.90</span>
+        </h3>
         <span class={[
           @badge_colors,
           "inline-flex w-24 h-10 justify-center items-center gap-x-1.5 rounded-md px-2 py-1 text-xs font-bold"

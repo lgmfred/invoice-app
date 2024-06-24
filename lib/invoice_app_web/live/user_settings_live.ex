@@ -3,6 +3,7 @@ defmodule InvoiceAppWeb.UserSettingsLive do
 
   alias InvoiceApp.Accounts
 
+  @impl Phoenix.LiveView
   def render(assigns) do
     ~H"""
     <div class="mx-auto w-5/6 md:w-1/2 lg:w-2/5">
@@ -119,6 +120,7 @@ defmodule InvoiceAppWeb.UserSettingsLive do
     """
   end
 
+  @impl Phoenix.LiveView
   def mount(%{"token" => token}, _session, socket) do
     socket =
       case Accounts.update_user_email(socket.assigns.current_user, token) do
@@ -132,6 +134,7 @@ defmodule InvoiceAppWeb.UserSettingsLive do
     {:ok, push_navigate(socket, to: ~p"/users/settings")}
   end
 
+  @impl Phoenix.LiveView
   def mount(_params, _session, socket) do
     user = socket.assigns.current_user
     full_name_changeset = Accounts.change_full_name(user)
@@ -155,6 +158,7 @@ defmodule InvoiceAppWeb.UserSettingsLive do
     {:ok, socket}
   end
 
+  @impl Phoenix.LiveView
   def handle_event("validate_email", params, socket) do
     %{"current_password" => password, "user" => user_params} = params
 
@@ -167,6 +171,7 @@ defmodule InvoiceAppWeb.UserSettingsLive do
     {:noreply, assign(socket, email_form: email_form, email_form_current_password: password)}
   end
 
+  @impl Phoenix.LiveView
   def handle_event("validate_name", params, socket) do
     %{"current_password" => password, "user" => user_params} = params
 
@@ -179,6 +184,7 @@ defmodule InvoiceAppWeb.UserSettingsLive do
     {:noreply, assign(socket, name_form: name_form, name_form_current_password: password)}
   end
 
+  @impl Phoenix.LiveView
   def handle_event("update_name", params, socket) do
     %{"current_password" => password, "user" => user_params} = params
     user = socket.assigns.current_user
@@ -198,6 +204,7 @@ defmodule InvoiceAppWeb.UserSettingsLive do
     end
   end
 
+  @impl Phoenix.LiveView
   def handle_event("validate_username", params, socket) do
     %{"current_password" => password, "user" => user_params} = params
 
@@ -210,6 +217,7 @@ defmodule InvoiceAppWeb.UserSettingsLive do
     {:noreply, assign(socket, username_form: name_form, username_form_current_password: password)}
   end
 
+  @impl Phoenix.LiveView
   def handle_event("update_username", params, socket) do
     %{"current_password" => password, "user" => user_params} = params
     user = socket.assigns.current_user
@@ -229,6 +237,7 @@ defmodule InvoiceAppWeb.UserSettingsLive do
     end
   end
 
+  @impl Phoenix.LiveView
   def handle_event("update_email", params, socket) do
     %{"current_password" => password, "user" => user_params} = params
     user = socket.assigns.current_user
@@ -249,6 +258,7 @@ defmodule InvoiceAppWeb.UserSettingsLive do
     end
   end
 
+  @impl Phoenix.LiveView
   def handle_event("validate_password", params, socket) do
     %{"current_password" => password, "user" => user_params} = params
 
@@ -261,6 +271,7 @@ defmodule InvoiceAppWeb.UserSettingsLive do
     {:noreply, assign(socket, password_form: password_form, current_password: password)}
   end
 
+  @impl Phoenix.LiveView
   def handle_event("update_password", params, socket) do
     %{"current_password" => password, "user" => user_params} = params
     user = socket.assigns.current_user

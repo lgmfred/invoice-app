@@ -2,11 +2,12 @@ defmodule InvoiceAppWeb.UserConfirmationInstructionsLive do
   use InvoiceAppWeb, :live_view
 
   alias InvoiceApp.Accounts
-
+  @impl Phoenix.LiveView
   def mount(_params, _session, socket) do
     {:ok, assign(socket, form: to_form(%{}, as: "user"))}
   end
 
+  @impl Phoenix.LiveView
   def handle_params(%{"email" => email}, _uri, socket) do
     case Accounts.get_user_by_email(email) do
       %{email: ^email, confirmed_at: nil} = _user ->
@@ -17,10 +18,12 @@ defmodule InvoiceAppWeb.UserConfirmationInstructionsLive do
     end
   end
 
+  @impl Phoenix.LiveView
   def handle_params(_params, _uri, socket) do
     {:noreply, assign(socket, email: nil)}
   end
 
+  @impl Phoenix.LiveView
   def render(assigns) do
     ~H"""
     <div class="min-h-screen flex items-center justify-center">
@@ -43,6 +46,7 @@ defmodule InvoiceAppWeb.UserConfirmationInstructionsLive do
     """
   end
 
+  @impl Phoenix.LiveView
   def handle_event("send_instructions", %{"user" => %{"email" => email}}, socket) do
     if user = Accounts.get_user_by_email(email) do
       Accounts.deliver_user_confirmation_instructions(
@@ -60,6 +64,7 @@ defmodule InvoiceAppWeb.UserConfirmationInstructionsLive do
      |> redirect(to: ~p"/")}
   end
 
+  @impl Phoenix.LiveView
   def handle_event("send_instructions", _params, socket) do
     if user = Accounts.get_user_by_email(socket.assigns.email) do
       Accounts.deliver_user_confirmation_instructions(

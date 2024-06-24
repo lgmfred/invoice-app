@@ -1,6 +1,7 @@
 defmodule InvoiceAppWeb.UserLoginLive do
   use InvoiceAppWeb, :live_view
 
+  @impl Phoenix.LiveView
   def render(assigns) do
     ~H"""
     <div class="h-screen mx-8 lg:mx-6 flex flex-col place-content-center gap-8">
@@ -114,9 +115,10 @@ defmodule InvoiceAppWeb.UserLoginLive do
     """
   end
 
+  @impl Phoenix.LiveView
   def mount(_params, _session, socket) do
     email = live_flash(socket.assigns.flash, :email)
     form = to_form(%{"email" => email}, as: "user")
-    {:ok, assign(socket, form: form), temporary_assigns: [form: form]}
+    {:ok, assign(socket, :form, form), temporary_assigns: [form: form]}
   end
 end

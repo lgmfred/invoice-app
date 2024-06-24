@@ -154,7 +154,7 @@ defmodule InvoiceAppWeb.UserAddAvatarLive do
       {:ok, user} ->
         {:noreply,
          socket
-         |> assign(current_user: user)
+         |> assign(:current_user, user)
          |> push_navigate(to: ~p"/users/add_address")}
 
       {:error, %Ecto.Changeset{} = _changeset} ->

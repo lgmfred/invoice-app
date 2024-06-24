@@ -4,17 +4,18 @@ defmodule InvoiceAppWeb.AddBusinessAddressLive do
   alias InvoiceApp.Accounts
   alias InvoiceApp.Accounts.BusinessAddress
 
+  @impl Phoenix.LiveView
   def mount(_params, _session, socket) do
     changeset = address_changeset(socket)
 
-    socket =
-      socket
-      |> assign(trigger_submit: false, check_errors: false)
-      |> assign_form(changeset)
-
-    {:ok, socket}
+    {:ok,
+     socket
+     |> assign(:check_errors, false)
+     |> assign(:trigger_submit, false)
+     |> assign_form(changeset)}
   end
 
+  @impl Phoenix.LiveView
   def render(assigns) do
     ~H"""
     <div class="h-screen lg:mx-6 flex flex-col place-content-center gap-6 lg:gap-4">
@@ -111,6 +112,7 @@ defmodule InvoiceAppWeb.AddBusinessAddressLive do
     """
   end
 
+  @impl Phoenix.LiveView
   def handle_event("save-address", address_params, socket) do
     user = socket.assigns.current_user
 
@@ -118,14 +120,14 @@ defmodule InvoiceAppWeb.AddBusinessAddressLive do
       {:ok, user} ->
         {:noreply,
          socket
-         |> assign(current_user: user)
+         |> assign(:current_user, user)
          |> put_flash(:info, "Address updated successfully.")
          |> push_navigate(to: ~p"/invoices")}
 
       {:error, %Ecto.Changeset{} = changeset} ->
         {:noreply,
          socket
-         |> assign(check_errors: true)
+         |> assign(:check_errors, true)
          |> assign_form(changeset)
          |> put_flash(:info, "An error occurred during address update.")}
     end
@@ -145,9 +147,11 @@ defmodule InvoiceAppWeb.AddBusinessAddressLive do
     form = to_form(changeset, as: "business_address")
 
     if changeset.valid? do
-      assign(socket, form: form, check_errors: false)
+      socket
+      |> assign(:form, form)
+      |> assign(:check_errors, false)
     else
-      assign(socket, form: form)
+      assign(socket, :form, form)
     end
   end
 

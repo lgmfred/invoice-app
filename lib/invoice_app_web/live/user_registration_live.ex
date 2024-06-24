@@ -4,6 +4,7 @@ defmodule InvoiceAppWeb.UserRegistrationLive do
   alias InvoiceApp.Accounts
   alias InvoiceApp.Accounts.User
 
+  @impl Phoenix.LiveView
   def render(assigns) do
     ~H"""
     <div class="h-screen mx-8 flex flex-col place-content-center gap-6 lg:gap-4">
@@ -118,6 +119,7 @@ defmodule InvoiceAppWeb.UserRegistrationLive do
     """
   end
 
+  @impl Phoenix.LiveView
   def mount(_params, _session, socket) do
     changeset = Accounts.change_user_registration(%User{})
 
@@ -129,6 +131,7 @@ defmodule InvoiceAppWeb.UserRegistrationLive do
     {:ok, socket, temporary_assigns: [form: nil]}
   end
 
+  @impl Phoenix.LiveView
   def handle_event("save", %{"user" => user_params}, socket) do
     case Accounts.register_user(user_params) do
       {:ok, user} ->
@@ -145,6 +148,7 @@ defmodule InvoiceAppWeb.UserRegistrationLive do
     end
   end
 
+  @impl Phoenix.LiveView
   def handle_event("validate", %{"user" => user_params}, socket) do
     changeset = Accounts.change_user_registration(%User{}, user_params)
 

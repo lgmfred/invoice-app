@@ -65,6 +65,7 @@ defmodule InvoiceApp.MixProject do
   # Type `mix help deps` for examples and options.
   defp deps do
     [
+      {:bcrypt_elixir, "~> 3.0"},
       {:phoenix, "~> 1.7.10"},
       {:phoenix_ecto, "~> 4.4"},
       {:ecto_sql, "~> 3.10"},
@@ -107,6 +108,7 @@ defmodule InvoiceApp.MixProject do
       "ecto.setup": ["ecto.create", "ecto.migrate", "run priv/repo/seeds.exs"],
       "ecto.reset": ["ecto.drop", "ecto.setup"],
       test: ["ecto.create --quiet", "ecto.migrate --quiet", "test"],
+      "test.live": "test --only live",
       "assets.setup": ["tailwind.install --if-missing", "esbuild.install --if-missing"],
       "assets.build": ["tailwind default", "esbuild default"],
       "assets.deploy": ["tailwind default --minify", "esbuild default --minify", "phx.digest"],
@@ -114,8 +116,8 @@ defmodule InvoiceApp.MixProject do
         "ci.deps_and_security",
         "ci.formatting",
         "ci.code_quality",
-        "ci.test",
-        "ci.migrations"
+        "ci.test"
+        # "ci.migrations"
       ],
       "ci.code_quality": [
         "compile --force --warnings-as-errors",

@@ -1,6 +1,7 @@
 defmodule InvoiceAppWeb.UserAddAvatarLiveTest do
-  alias InvoiceApp.Accounts
   use InvoiceAppWeb.ConnCase, async: false
+
+  alias InvoiceApp.Accounts
 
   import Phoenix.LiveViewTest
   import InvoiceApp.AccountsFixtures
@@ -21,7 +22,7 @@ defmodule InvoiceAppWeb.UserAddAvatarLiveTest do
   end
 
   test "user can see the default avatar if one isn't uploaded yet", %{conn: conn} do
-    {:ok, view, _html} = live(conn, "/users/add_avatar")
+    {:ok, view, _html} = live(conn, ~p"/users/add_avatar")
     default_avatar = "/images/default_avatar.png"
 
     assert has_element?(view, "[data-role='default-avatar']")
@@ -30,7 +31,7 @@ defmodule InvoiceAppWeb.UserAddAvatarLiveTest do
   end
 
   test "user can see the preview of pictures to be uploaded", %{conn: conn} do
-    {:ok, view, _html} = live(conn, "/users/add_avatar")
+    {:ok, view, _html} = live(conn, ~p"/users/add_avatar")
 
     view
     |> upload("keynote_elixir_brazil.jpeg", "image/jpeg")
@@ -39,7 +40,7 @@ defmodule InvoiceAppWeb.UserAddAvatarLiveTest do
   end
 
   test "user can cancel upload", %{conn: conn} do
-    {:ok, view, _html} = live(conn, "/users/add_avatar")
+    {:ok, view, _html} = live(conn, ~p"/users/add_avatar")
 
     view
     |> upload("keynote_elixir_brazil.jpeg", "image/jpeg")
@@ -49,7 +50,7 @@ defmodule InvoiceAppWeb.UserAddAvatarLiveTest do
   end
 
   test "user sees error when a larger file is uploaded", %{conn: conn} do
-    {:ok, view, _html} = live(conn, "/users/add_avatar")
+    {:ok, view, _html} = live(conn, ~p"/users/add_avatar")
 
     view
     |> upload("keynote_elixir_brazil.jpeg", "image/jpeg")
@@ -58,7 +59,7 @@ defmodule InvoiceAppWeb.UserAddAvatarLiveTest do
   end
 
   test "user can upload a new avatar", %{conn: conn, user: user} do
-    {:ok, view, _html} = live(conn, "/users/add_avatar")
+    {:ok, view, _html} = live(conn, ~p"/users/add_avatar")
 
     view
     |> upload("cookie-monster.png", "image/png")
@@ -68,7 +69,7 @@ defmodule InvoiceAppWeb.UserAddAvatarLiveTest do
 
     updated_user = Accounts.get_user!(user.id)
 
-    {:ok, view, _html} = live(conn, "/users/add_avatar")
+    {:ok, view, _html} = live(conn, ~p"/users/add_avatar")
 
     refute user.avatar_url
     refute user.avatar_url == updated_user.avatar_url

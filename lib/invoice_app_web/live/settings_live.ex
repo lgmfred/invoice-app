@@ -1,6 +1,7 @@
 defmodule InvoiceAppWeb.SettingsLive do
   use InvoiceAppWeb, :live_view
 
+  alias InvoiceApp.Accounts
   alias Phoenix.LiveView.JS
 
   @impl Phoenix.LiveView
@@ -10,15 +11,45 @@ defmodule InvoiceAppWeb.SettingsLive do
   end
 
   @impl Phoenix.LiveView
-  def handle_params(%{"tab" => tab}, _uri, socket) do
-    tab = String.to_existing_atom(tab)
-    selected_tab = Enum.find(socket.assigns.tabs, fn {key, _val} -> key == tab end)
-    {:noreply, assign(socket, :selected_tab, selected_tab)}
+  def handle_params(%{"tab" => "personal"}, _uri, socket) do
+    selected_tab = Enum.find(socket.assigns.tabs, fn {key, _val} -> key == :personal end)
+
+    {:noreply,
+     socket
+     |> allow_upload(:avatar,
+       accept: ~w(.png .jpeg .jpg),
+       max_entries: 1,
+       max_file_size: 400_000,
+       progress: &handle_progress/3,
+       auto_upload: true
+     )
+     |> assign(:page_title, "Settings - Personal")
+     |> assign(:selected_tab, selected_tab)}
+  end
+
+  @impl Phoenix.LiveView
+  def handle_params(%{"tab" => "password"}, _uri, socket) do
+    selected_tab = Enum.find(socket.assigns.tabs, fn {key, _val} -> key == :password end)
+
+    {:noreply,
+     socket
+     |> assign(:page_title, "Settings - Password")
+     |> assign(:selected_tab, selected_tab)}
+  end
+
+  @impl Phoenix.LiveView
+  def handle_params(%{"tab" => "email"}, _uri, socket) do
+    selected_tab = Enum.find(socket.assigns.tabs, fn {key, _val} -> key == :email end)
+
+    {:noreply,
+     socket
+     |> assign(:page_title, "Settings - Email notifications")
+     |> assign(:selected_tab, selected_tab)}
   end
 
   @impl Phoenix.LiveView
   def handle_params(_params, _uri, socket) do
-    {:noreply, assign(socket, :selected_tab, hd(socket.assigns.tabs))}
+    {:noreply, push_patch(socket, to: ~p"/settings?tab=personal")}
   end
 
   @impl Phoenix.LiveView
@@ -28,6 +59,7 @@ defmodule InvoiceAppWeb.SettingsLive do
       <.settings_header tabs={@tabs} selected_tab={@selected_tab} />
       <.address_form
         :if={@selected_tab == {:personal, "Personal"}}
+        uploads={@uploads}
         current_user={@current_user}
         tabs={@tabs}
         selected_tab={@selected_tab}
@@ -49,6 +81,49 @@ defmodule InvoiceAppWeb.SettingsLive do
     """
   end
 
+  @impl Phoenix.LiveView
+  def handle_event("validate", _params, socket) do
+    {:noreply, socket}
+  end
+
+  def handle_event("delete-avatar", _params, socket) do
+    update_user(socket, nil)
+  end
+
+  defp handle_progress(:avatar, entry, socket) do
+    if entry.done? do
+      [avatar_url | _] = consume_uploads(socket)
+      update_user(socket, avatar_url)
+    else
+      {:noreply, socket}
+    end
+  end
+
+  defp consume_uploads(socket) do
+    consume_uploaded_entries(socket, :avatar, fn %{path: path}, entry ->
+      dest = upload_destination(entry)
+      Path.dirname(dest) |> File.mkdir_p!()
+      File.cp!(path, dest)
+      static_path = Path.join(InvoiceApp.public_uploads_path(), Path.basename(dest))
+      {:ok, static_path(socket, static_path)}
+    end)
+  end
+
+  defp upload_destination(entry) do
+    Path.join(InvoiceApp.uploads_dir(), filename(entry))
+  end
+
+  defp filename(entry) do
+    "#{entry.uuid}-#{entry.client_name}"
+  end
+
+  defp update_user(socket, avatar_url) do
+    current_user = socket.assigns.current_user
+    attrs = %{avatar_url: avatar_url}
+    {:ok, user} = Accounts.update_user(current_user, attrs)
+    {:noreply, assign(socket, :current_user, user)}
+  end
+
   def settings_header(assigns) do
     ~H"""
     <header class="border-b border-white/5">
@@ -60,6 +135,7 @@ defmodule InvoiceAppWeb.SettingsLive do
             <.link
               patch={~p"/settings?#{[tab: id]}"}
               class={if tab == @selected_tab, do: "text-indigo-400"}
+              data-role={id}
             >
               <%= text %>
             </.link>
@@ -72,17 +148,29 @@ defmodule InvoiceAppWeb.SettingsLive do
 
   def address_form(assigns) do
     ~H"""
-    <div class="mx-auto max-w-3xl px-4 py-10 sm:px-6 lg:px-8 lg:py-12 rounded-md bg-white dark:bg-[#1E2139]">
-      <form class="flex flex-col gap-4">
+    <div class="flex flex-col gap-4 mx-auto max-w-3xl px-4 py-10 sm:px-6 lg:px-8 lg:py-12 rounded-md bg-white dark:bg-[#1E2139]">
+      <form class="flex flex-col gap-4" id="upload-form" phx-change="validate">
         <%!-- Avatar render and update section --%>
         <.render_avatar current_user={@current_user} />
+        <div class="col-span-2 text-[#E86969]">
+          <%= for entry <- @uploads.avatar.entries do %>
+            <%= for err <- upload_errors(@uploads.avatar, entry) do %>
+              <p data-role="entry-upload-error" class="alert alert-danger justify-self-center">
+                <%= error_to_string(err) %>
+              </p>
+            <% end %>
+          <% end %>
+          <%= for err <- upload_errors(@uploads.avatar) do %>
+            <p data-role="general-upload-error" class="alert alert-danger justify-self-center">
+              <%= error_to_string(err) %>
+            </p>
+          <% end %>
+        </div>
         <div class="flex gap-4 justify-start">
           <div class="relative">
-            <input
-              id="user-photo"
-              name="user-photo"
-              type="file"
+            <.live_file_input
               class="peer absolute z-0 inset-0 h-full w-full rounded-full opacity-0"
+              upload={@uploads.avatar}
             />
             <label
               for="user-photo"
@@ -93,13 +181,17 @@ defmodule InvoiceAppWeb.SettingsLive do
             </label>
           </div>
           <button
+            phx-click="delete-avatar"
             type="button"
             class="inline-flex justify-center rounded-full bg-gray-200 dark:bg-[#252945] px-3 py-2 text-sm font-semibold shadow-sm hover:bg-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-slate-300"
+            data-role="delete-avatar"
           >
             Delete
           </button>
         </div>
-        <h2 class="font-medium text-xl">Edit  Profile Information</h2>
+      </form>
+      <form class="flex flex-col gap-4">
+        <h2 class="font-medium text-xl">Edit Profile Information</h2>
         <div class="grid grid-cols-1 gap-y-6 sm:grid-cols-6 sm:gap-x-6">
           <div class="sm:col-span-3">
             <label
@@ -211,21 +303,7 @@ defmodule InvoiceAppWeb.SettingsLive do
               class="mt-2 block w-full rounded-md border-0 py-1.5 font-bold dark:bg-[#303559] shadow-sm ring-1 ring-inset ring-[#DFE3FA] dark:ring-[#303559] placeholder:text-slate-400 focus:ring-1 focus:ring-inset focus:ring-[#0C0E16] dark:focus:ring-white sm:text-sm sm:leading-6"
             />
           </div>
-          <div class="sm:col-span-6 flex flex-col gap-4 sm:flex-row sm:justify-between">
-            <button
-              type="submit"
-              class="inline-flex sm:order-last justify-center rounded-full bg-blue-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-blue-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600"
-            >
-              Save changes
-            </button>
-            <button
-              phx-click={show_modal("delete-account")}
-              type="button"
-              class="rounded-full px-3 py-2 text-sm font-semibold text-[#EC5757] hover:bg-[#7E88C3] dark:hover:bg-[#303559]"
-            >
-              Delete Account
-            </button>
-          </div>
+          <.save_delete_buttons />
         </div>
       </form>
     </div>
@@ -292,22 +370,7 @@ defmodule InvoiceAppWeb.SettingsLive do
               <span>special character (*#$%&!-@)</span>
             </div>
           </div>
-
-          <div class="sm:col-span-6 flex flex-col gap-4 sm:flex-row sm:justify-between">
-            <button
-              type="submit"
-              class="inline-flex sm:order-last justify-center rounded-full bg-blue-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-blue-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600"
-            >
-              Save changes
-            </button>
-            <button
-              phx-click={show_modal("delete-account")}
-              type="button"
-              class="rounded-full px-3 py-2 text-sm font-semibold text-[#EC5757] hover:bg-[#7E88C3] dark:hover:bg-[#303559]"
-            >
-              Delete Account
-            </button>
-          </div>
+          <.save_delete_buttons />
         </div>
       </form>
     </div>
@@ -374,22 +437,7 @@ defmodule InvoiceAppWeb.SettingsLive do
             </div>
           </fieldset>
 
-          <div class="sm:col-span-6 flex flex-col gap-4 sm:flex-row sm:justify-between">
-            <button
-              type="button"
-              class="inline-flex sm:order-last justify-center rounded-full bg-blue-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-blue-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600"
-            >
-              Save changes
-            </button>
-
-            <button
-              phx-click={JS.show(to: "#delete-account")}
-              type="button"
-              class="rounded-full px-3 py-2 text-sm font-semibold text-[#EC5757] hover:bg-[#7E88C3] dark:hover:bg-[#303559]"
-            >
-              Delete Account
-            </button>
-          </div>
+          <.save_delete_buttons />
         </div>
       </form>
     </div>
@@ -400,11 +448,38 @@ defmodule InvoiceAppWeb.SettingsLive do
     ~H"""
     <div class="flex gap-2 text-xl items-center justify-center">
       <div class="flex-shrink-0">
-        <img class="h-16 w-16 rounded-full" src={@current_user.avatar_url} alt="" />
+        <img
+          :if={@current_user.avatar_url}
+          class="h-16 w-16 rounded-full"
+          src={@current_user.avatar_url}
+          data-role="user-avatar"
+          alt=""
+        />
+        <.icon :if={!@current_user.avatar_url} name="hero-user-circle" class="h-20 w-20" />
       </div>
       <h2 class="min-w-0 flex-1 font-semibold">
         <%= @current_user.full_name %> / Profile information
       </h2>
+    </div>
+    """
+  end
+
+  def save_delete_buttons(assigns) do
+    ~H"""
+    <div class="sm:col-span-6 flex flex-col gap-4 sm:flex-row sm:justify-between">
+      <button
+        type="submit"
+        class="inline-flex sm:order-last justify-center rounded-full bg-blue-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-blue-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600"
+      >
+        Save changes
+      </button>
+      <button
+        phx-click={show_modal("delete-account")}
+        type="button"
+        class="rounded-full px-3 py-2 text-sm font-semibold text-[#EC5757] hover:bg-[#7E88C3] dark:hover:bg-[#303559]"
+      >
+        Delete Account
+      </button>
     </div>
     """
   end
@@ -474,4 +549,8 @@ defmodule InvoiceAppWeb.SettingsLive do
     </div>
     """
   end
+
+  def error_to_string(:too_large), do: "Too large"
+  def error_to_string(:not_accepted), do: "Invalid file type"
+  def error_to_string(:too_many_files), do: "Too many files"
 end

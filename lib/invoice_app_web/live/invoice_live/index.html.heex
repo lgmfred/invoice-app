@@ -1,0 +1,52 @@
+<.header>
+  Listing Invoices
+  <:actions>
+    <.link patch={~p"/invoices/new"}>
+      <.button>New Invoice</.button>
+    </.link>
+  </:actions>
+</.header>
+
+<.table
+  id="invoices"
+  rows={@streams.invoices}
+  row_click={fn {_id, invoice} -> JS.navigate(~p"/invoices/#{invoice}") end}
+>
+  <:col :let={{_id, invoice}} label="ID">#<%= invoice.id %></:col>
+  <:col :let={{_id, invoice}} label="Date"><%= invoice.date %></:col>
+  <:col :let={{_id, invoice}} label="Bill To"><%= invoice.bill_to.name %></:col>
+  <:col :let={{_id, invoice}} label="Amount">
+    <%= Enum.reduce(invoice.items, 0, fn item, acc -> Decimal.add(acc, item.total) end) %>
+  </:col>
+  <:col :let={{_id, invoice}} label="Status"><%= invoice.status %></:col>
+  <:action :let={{_id, invoice}}>
+    <div class="sr-only">
+      <.link navigate={~p"/invoices/#{invoice}"}>Show</.link>
+    </div>
+    <.link patch={~p"/invoices/#{invoice}/edit"}>Edit</.link>
+  </:action>
+  <:action :let={{id, invoice}}>
+    <.link
+      phx-click={JS.push("delete", value: %{id: invoice.id}) |> hide("##{id}")}
+      data-confirm="Are you sure?"
+    >
+      Delete
+    </.link>
+  </:action>
+</.table>
+
+<.modal
+  :if={@live_action in [:new, :edit]}
+  id="invoice-modal"
+  show
+  on_cancel={JS.patch(~p"/invoices")}
+>
+  <.live_component
+    module={InvoiceAppWeb.InvoiceLive.FormComponent}
+    id={@invoice.id || :new}
+    title={@page_title}
+    action={@live_action}
+    invoice={@invoice}
+    patch={~p"/invoices"}
+  />
+</.modal>

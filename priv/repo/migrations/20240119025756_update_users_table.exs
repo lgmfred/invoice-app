@@ -3,8 +3,8 @@ defmodule InvoiceApp.Repo.Migrations.UpdateUsersTable do
 
   def change do
     alter table(:users) do
-      add :full_name, :string
-      add :username, :string
+      add :full_name, :string, null: false
+      add :username, :citext, null: false
       add :avatar_url, :string
       add :business_address, :map
     end

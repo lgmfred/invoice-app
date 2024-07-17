@@ -12,8 +12,8 @@ defmodule InvoiceApp.Accounts.User do
     field :password, :string, virtual: true, redact: true
     field :hashed_password, :string, redact: true
     field :confirmed_at, :naive_datetime
-
     embeds_one :business_address, InvoiceApp.Accounts.BusinessAddress, on_replace: :update
+    has_many :invoices, InvoiceApp.Invoices.Invoice, on_delete: :delete_all
 
     timestamps(type: :utc_datetime)
   end

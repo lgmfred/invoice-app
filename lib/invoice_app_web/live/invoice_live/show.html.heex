@@ -1,0 +1,30 @@
+<.header>
+  Invoice <%= @invoice.id %>
+  <:subtitle>This is a invoice record from your database.</:subtitle>
+  <:actions>
+    <.link patch={~p"/invoices/#{@invoice}/show/edit"} phx-click={JS.push_focus()}>
+      <.button>Edit invoice</.button>
+    </.link>
+  </:actions>
+</.header>
+
+<.list>
+  <:item title="Bill from"><%= @invoice.bill_from %></:item>
+  <:item title="Bill to"><%= @invoice.bill_to %></:item>
+  <:item title="Payment term"><%= @invoice.payment_term %></:item>
+  <:item title="Project description"><%= @invoice.project_description %></:item>
+  <:item title="Items"><%= @invoice.items %></:item>
+</.list>
+
+<.back navigate={~p"/invoices"}>Back to invoices</.back>
+
+<.modal :if={@live_action == :edit} id="invoice-modal" show on_cancel={JS.patch(~p"/invoices/#{@invoice}")}>
+  <.live_component
+    module={InvoiceAppWeb.InvoiceLive.FormComponent}
+    id={@invoice.id}
+    title={@page_title}
+    action={@live_action}
+    invoice={@invoice}
+    patch={~p"/invoices/#{@invoice}"}
+  />
+</.modal>

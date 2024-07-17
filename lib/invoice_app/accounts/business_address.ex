@@ -3,7 +3,10 @@ defmodule InvoiceApp.Accounts.BusinessAddress do
   User business address embedded schema
   """
   use Ecto.Schema
+
   import Ecto.Changeset
+
+  alias InvoiceApp.Accounts.BusinessAddress
 
   embedded_schema do
     field :country, :string
@@ -16,9 +19,11 @@ defmodule InvoiceApp.Accounts.BusinessAddress do
   @doc """
   A business address changeset for registration.
   """
-  def changeset(%__MODULE__{} = address, attrs \\ %{}) do
+  def changeset(%BusinessAddress{} = address, attrs \\ %{}) do
+    required_fields = [:country, :city, :street_address, :postal_code, :phone_number]
+
     address
-    |> cast(attrs, [:country, :city, :street_address, :postal_code, :phone_number])
-    |> validate_required([:country, :city, :street_address, :postal_code, :phone_number])
+    |> cast(attrs, required_fields)
+    |> validate_required(required_fields)
   end
 end

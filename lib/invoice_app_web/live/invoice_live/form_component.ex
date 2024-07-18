@@ -1,4 +1,5 @@
 defmodule InvoiceAppWeb.InvoiceLive.FormComponent do
+  alias InvoiceAppWeb.InvoiceLive.InvoiceForm
   use InvoiceAppWeb, :live_component
 
   alias InvoiceApp.Invoices
@@ -19,12 +20,45 @@ defmodule InvoiceAppWeb.InvoiceLive.FormComponent do
         phx-change="validate"
         phx-submit="save"
       >
-        <.input field={@form[:bill_from]} type="date" label="Bill from" />
-        <.input field={@form[:bill_to]} type="date" label="Bill to" />
-        <.input field={@form[:payment_term]} type="number" label="Payment term" />
-        <.input field={@form[:project_description]} type="text" label="Project description" />
+        <.inputs_for :let={bill_from} field={@form[:bill_from]}>
+          <.input field={bill_from[:street_address]} type="text" label="Street address" />
+          <.input field={bill_from[:city]} type="text" label="City" />
+          <.input field={bill_from[:post_code]} type="text" label="Post code" />
+          <.input field={bill_from[:country]} type="text" label="Country" />
+        </.inputs_for>
+        <.inputs_for :let={bill_to} field={@form[:bill_to]}>
+          <.input field={bill_to[:name]} type="text" label="Client's Name" />
+          <.input field={bill_to[:email]} type="email" label="Client's Email" />
+          <.input field={bill_to[:street_address]} type="text" label="Street Address" />
+          <.input field={bill_to[:city]} type="text" label="City" />
+          <.input field={bill_to[:post_code]} type="text" label="Post Code" />
+          <.input field={bill_to[:country]} type="text" label="Country" />
+        </.inputs_for>
+        <.input field={@form[:date]} type="date" label="Invoice Date" />
+        <.input
+          field={@form[:payment_term]}
+          type="select"
+          options={term_options()}
+          label="Payment Term"
+        />
+        <.input field={@form[:project_description]} type="text" label="Project Description" />
+        <.inputs_for :let={item} field={@form[:items]}>
+          <input name={@form[:item_sort].name <> "[]"} type="hidden" value={item.id} />
+          <.input field={item[:name]} type="text" label="Item Name" />
+          <.input field={item[:quantity]} type="number" label="Qty" />
+          <.input field={item[:price]} type="number" label="Price" />
+          <.input field={item[:total]} type="number" label="Total" />
+        </.inputs_for>
+        <button
+          type="button"
+          name={@form[:item_sort].name <> "[]"}
+          value="new"
+          phx-click={JS.dispatch("change")}
+        >
+          + Add New Item
+        </button>
         <:actions>
-          <.button phx-disable-with="Saving...">Save Invoice</.button>
+          <.button phx-disable-with="Saving...">Save & Send</.button>
         </:actions>
       </.simple_form>
     </div>
@@ -32,26 +66,20 @@ defmodule InvoiceAppWeb.InvoiceLive.FormComponent do
   end
 
   @impl true
-  def update(%{invoice: invoice} = assigns, socket) do
-    changeset = Invoices.change_invoice(invoice)
-
-    {:ok,
-     socket
-     |> assign(assigns)
-     |> assign_form(changeset)}
+  def update(assigns, socket) do
+    {:ok, assign(socket, assigns)}
   end
 
   @impl true
-  def handle_event("validate", %{"invoice" => invoice_params}, socket) do
+  def handle_event("validate", %{"invoice_form" => invoice_params}, socket) do
     changeset =
-      socket.assigns.invoice
-      |> Invoices.change_invoice(invoice_params)
-      |> Map.put(:action, :validate)
+      socket.assigns.form
+      |> InvoiceForm.validate(invoice_params)
 
     {:noreply, assign_form(socket, changeset)}
   end
 
-  def handle_event("save", %{"invoice" => invoice_params}, socket) do
+  def handle_event("save", %{"invoice_form" => invoice_params}, socket) do
     save_invoice(socket, socket.assigns.action, invoice_params)
   end
 
@@ -70,18 +98,26 @@ defmodule InvoiceAppWeb.InvoiceLive.FormComponent do
     end
   end
 
-  defp save_invoice(socket, :new, invoice_params) do
-    case Invoices.create_invoice(invoice_params) do
-      {:ok, invoice} ->
-        notify_parent({:saved, invoice})
+  defp save_invoice(socket, :new, params) do
+    form = socket.assigns.form
+    user = socket.assigns.current_user
+
+    with {:ok, %{invoice: invoice_data}} <- InvoiceForm.submit(form, params),
+         {:ok, invoice} <- Invoices.create_invoice(user, invoice_data) do
+      notify_parent({:saved, invoice})
+
+      {:noreply,
+       socket
+       |> put_flash(:info, "Invoice created successfully")
+       |> push_patch(to: socket.assigns.patch)}
+    else
+      {:error, %Ecto.Changeset{} = _changeset} ->
+        changeset = InvoiceForm.validate(socket.assigns.form, params)
 
         {:noreply,
          socket
-         |> put_flash(:info, "Invoice created successfully")
-         |> push_patch(to: socket.assigns.patch)}
-
-      {:error, %Ecto.Changeset{} = changeset} ->
-        {:noreply, assign_form(socket, changeset)}
+         |> put_flash(:error, "Invalid data!")
+         |> assign_form(changeset)}
     end
   end
 
@@ -90,4 +126,8 @@ defmodule InvoiceAppWeb.InvoiceLive.FormComponent do
   end
 
   defp notify_parent(msg), do: send(self(), {__MODULE__, msg})
+
+  defp term_options do
+    ["Net 1 Day": 1, "Net 7 Days": 7, "Net 14 Days": 14, "Net 30 Days": 30]
+  end
 end

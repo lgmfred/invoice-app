@@ -4,9 +4,27 @@ defmodule InvoiceAppWeb.InvoiceLiveTest do
   import Phoenix.LiveViewTest
   import InvoiceApp.InvoicesFixtures
 
-  @create_attrs %{bill_from: "2024-07-16", bill_to: "2024-07-16", items: %{}, payment_term: 42, project_description: "some project_description"}
-  @update_attrs %{bill_from: "2024-07-17", bill_to: "2024-07-17", items: %{}, payment_term: 43, project_description: "some updated project_description"}
-  @invalid_attrs %{bill_from: nil, bill_to: nil, items: nil, payment_term: nil, project_description: nil}
+  @create_attrs %{
+    bill_from: "2024-07-16",
+    bill_to: "2024-07-16",
+    items: %{},
+    payment_term: 42,
+    project_description: "some project_description"
+  }
+  @update_attrs %{
+    bill_from: "2024-07-17",
+    bill_to: "2024-07-17",
+    items: %{},
+    payment_term: 43,
+    project_description: "some updated project_description"
+  }
+  @invalid_attrs %{
+    bill_from: nil,
+    bill_to: nil,
+    items: nil,
+    payment_term: nil,
+    project_description: nil
+  }
 
   defp create_invoice(_) do
     invoice = invoice_fixture()

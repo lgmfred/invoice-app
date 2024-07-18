@@ -4,10 +4,10 @@ defmodule InvoiceApp.Invoices do
   """
 
   import Ecto.Query, warn: false
-  alias InvoiceApp.Repo
 
-  alias InvoiceApp.Invoices.Invoice
   alias InvoiceApp.Accounts.User
+  alias InvoiceApp.Invoices.Invoice
+  alias InvoiceApp.Repo
 
   @doc """
   Returns the list of invoices.

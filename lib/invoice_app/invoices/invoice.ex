@@ -1,4 +1,5 @@
 defmodule InvoiceApp.Invoices.Invoice do
+  @moduledoc false
   use Ecto.Schema
 
   import Ecto.Changeset
@@ -7,17 +8,15 @@ defmodule InvoiceApp.Invoices.Invoice do
   alias InvoiceApp.Invoices.BillTo
   alias InvoiceApp.Invoices.Item
 
+  @valid_terms [1, 7, 14, 30]
+
   schema "invoices" do
     embeds_one :bill_from, InvoiceApp.Invoices.BillFrom, on_replace: :update
     embeds_one :bill_to, InvoiceApp.Invoices.BillTo, on_replace: :update
     embeds_many :items, InvoiceApp.Invoices.Item, on_replace: :delete
     field :status, Ecto.Enum, values: [:paid, :pending, :draft], default: :pending
     field :date, :date
-
-    field :payment_term, Ecto.Enum,
-      values: [net_1_day: 1, net_7_days: 7, net_14_days: 14, net_30_days: 30],
-      default: :net_1_day
-
+    field :payment_term, :integer, default: 1
     field :project_description, :string
     belongs_to :user, InvoiceApp.Accounts.User, on_replace: :update
 
@@ -31,6 +30,7 @@ defmodule InvoiceApp.Invoices.Invoice do
     invoice
     |> cast(attrs, required_fields)
     |> validate_required(required_fields)
+    |> validate_inclusion(:payment_term, @valid_terms)
     |> assoc_constraint(:user)
     |> cast_embed(:bill_from, with: &BillFrom.changeset/2, required: true)
     |> cast_embed(:bill_to, with: &BillTo.changeset/2, required: true)

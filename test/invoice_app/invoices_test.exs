@@ -8,7 +8,13 @@ defmodule InvoiceApp.InvoicesTest do
 
     import InvoiceApp.InvoicesFixtures
 
-    @invalid_attrs %{bill_from: nil, bill_to: nil, items: nil, payment_term: nil, project_description: nil}
+    @invalid_attrs %{
+      bill_from: nil,
+      bill_to: nil,
+      items: nil,
+      payment_term: nil,
+      project_description: nil
+    }
 
     test "list_invoices/0 returns all invoices" do
       invoice = invoice_fixture()
@@ -21,7 +27,13 @@ defmodule InvoiceApp.InvoicesTest do
     end
 
     test "create_invoice/1 with valid data creates a invoice" do
-      valid_attrs = %{bill_from: ~D[2024-07-16], bill_to: ~D[2024-07-16], items: %{}, payment_term: 42, project_description: "some project_description"}
+      valid_attrs = %{
+        bill_from: ~D[2024-07-16],
+        bill_to: ~D[2024-07-16],
+        items: %{},
+        payment_term: 42,
+        project_description: "some project_description"
+      }
 
       assert {:ok, %Invoice{} = invoice} = Invoices.create_invoice(valid_attrs)
       assert invoice.bill_from == ~D[2024-07-16]
@@ -37,7 +49,14 @@ defmodule InvoiceApp.InvoicesTest do
 
     test "update_invoice/2 with valid data updates the invoice" do
       invoice = invoice_fixture()
-      update_attrs = %{bill_from: ~D[2024-07-17], bill_to: ~D[2024-07-17], items: %{}, payment_term: 43, project_description: "some updated project_description"}
+
+      update_attrs = %{
+        bill_from: ~D[2024-07-17],
+        bill_to: ~D[2024-07-17],
+        items: %{},
+        payment_term: 43,
+        project_description: "some updated project_description"
+      }
 
       assert {:ok, %Invoice{} = invoice} = Invoices.update_invoice(invoice, update_attrs)
       assert invoice.bill_from == ~D[2024-07-17]

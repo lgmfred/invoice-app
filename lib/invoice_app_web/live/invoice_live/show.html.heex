@@ -18,7 +18,12 @@
 
 <.back navigate={~p"/invoices"}>Back to invoices</.back>
 
-<.modal :if={@live_action == :edit} id="invoice-modal" show on_cancel={JS.patch(~p"/invoices/#{@invoice}")}>
+<.modal
+  :if={@live_action == :edit}
+  id="invoice-modal"
+  show
+  on_cancel={JS.patch(~p"/invoices/#{@invoice}")}
+>
   <.live_component
     module={InvoiceAppWeb.InvoiceLive.FormComponent}
     id={@invoice.id}

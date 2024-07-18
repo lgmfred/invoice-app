@@ -4,9 +4,15 @@ defmodule InvoiceAppWeb.InvoiceLive.Index do
   alias InvoiceApp.Invoices
   alias InvoiceApp.Invoices.Invoice
 
+  alias InvoiceAppWeb.InvoiceLive.InvoiceForm
+
   @impl true
   def mount(_params, _session, socket) do
-    {:ok, stream(socket, :invoices, Invoices.list_invoices())}
+    changeset = InvoiceForm.new()
+
+    {:ok,
+     stream(socket, :invoices, Invoices.list_invoices())
+     |> assign_form(changeset)}
   end
 
   @impl true
@@ -21,9 +27,11 @@ defmodule InvoiceAppWeb.InvoiceLive.Index do
   end
 
   defp apply_action(socket, :new, _params) do
+    changeset = InvoiceForm.new()
+
     socket
     |> assign(:page_title, "New Invoice")
-    |> assign(:invoice, %Invoice{})
+    |> assign_form(changeset)
   end
 
   defp apply_action(socket, :index, _params) do
@@ -43,5 +51,9 @@ defmodule InvoiceAppWeb.InvoiceLive.Index do
     {:ok, _} = Invoices.delete_invoice(invoice)
 
     {:noreply, stream_delete(socket, :invoices, invoice)}
+  end
+
+  def assign_form(socket, %Ecto.Changeset{} = changeset) do
+    assign(socket, :form, to_form(changeset))
   end
 end

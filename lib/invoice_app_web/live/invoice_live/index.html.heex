@@ -43,10 +43,11 @@
 >
   <.live_component
     module={InvoiceAppWeb.InvoiceLive.FormComponent}
-    id={@invoice.id || :new}
+    id={@form.source.data.id || :new}
     title={@page_title}
     action={@live_action}
-    invoice={@invoice}
+    current_user={@current_user}
+    form={@form}
     patch={~p"/invoices"}
   />
 </.modal>

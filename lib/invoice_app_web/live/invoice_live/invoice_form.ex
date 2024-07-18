@@ -3,6 +3,7 @@ defmodule InvoiceAppWeb.InvoiceLive.InvoiceForm do
 
   import Ecto.Changeset
 
+  alias InvoiceApp.Invoices.Invoice
   alias InvoiceAppWeb.InvoiceLive.InvoiceForm
 
   alias InvoiceApp.Invoices.BillFrom
@@ -35,6 +36,19 @@ defmodule InvoiceAppWeb.InvoiceLive.InvoiceForm do
 
     %InvoiceForm{}
     |> changeset(default_attrs)
+  end
+
+  def new(%Invoice{} = invoice) do
+    %InvoiceForm{
+      bill_from: invoice.bill_from,
+      bill_to: invoice.bill_to,
+      items: invoice.items,
+      status: invoice.status,
+      date: invoice.date,
+      payment_term: invoice.payment_term,
+      project_description: invoice.project_description
+    }
+    |> changeset(%{})
   end
 
   @doc false

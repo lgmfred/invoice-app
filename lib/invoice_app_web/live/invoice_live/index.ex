@@ -21,9 +21,13 @@ defmodule InvoiceAppWeb.InvoiceLive.Index do
   end
 
   defp apply_action(socket, :edit, %{"id" => id}) do
+    invoice = Invoices.get_invoice!(id)
+    changeset = InvoiceForm.new(invoice)
+
     socket
     |> assign(:page_title, "Edit Invoice")
-    |> assign(:invoice, Invoices.get_invoice!(id))
+    |> assign(:invoice, invoice)
+    |> assign_form(changeset)
   end
 
   defp apply_action(socket, :new, _params) do
@@ -31,6 +35,7 @@ defmodule InvoiceAppWeb.InvoiceLive.Index do
 
     socket
     |> assign(:page_title, "New Invoice")
+    |> assign(:invoice, %Invoice{})
     |> assign_form(changeset)
   end
 

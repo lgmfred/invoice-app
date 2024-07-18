@@ -83,18 +83,26 @@ defmodule InvoiceAppWeb.InvoiceLive.FormComponent do
     save_invoice(socket, socket.assigns.action, invoice_params)
   end
 
-  defp save_invoice(socket, :edit, invoice_params) do
-    case Invoices.update_invoice(socket.assigns.invoice, invoice_params) do
-      {:ok, invoice} ->
-        notify_parent({:saved, invoice})
+  defp save_invoice(socket, :edit, params) do
+    form = socket.assigns.form
+    invoice = socket.assigns.invoice
+
+    with {:ok, %{invoice: invoice_data}} <- InvoiceForm.submit(form, params),
+         {:ok, updated_invoice} <- Invoices.update_invoice(invoice, invoice_data) do
+      notify_parent({:saved, updated_invoice})
+
+      {:noreply,
+       socket
+       |> put_flash(:info, "Invoice updated successfully")
+       |> push_patch(to: socket.assigns.patch)}
+    else
+      {:error, %Ecto.Changeset{} = _changeset} ->
+        changeset = InvoiceForm.validate(socket.assigns.form, params)
 
         {:noreply,
          socket
-         |> put_flash(:info, "Invoice updated successfully")
-         |> push_patch(to: socket.assigns.patch)}
-
-      {:error, %Ecto.Changeset{} = changeset} ->
-        {:noreply, assign_form(socket, changeset)}
+         |> put_flash(:error, "Invalid data!")
+         |> assign_form(changeset)}
     end
   end
 

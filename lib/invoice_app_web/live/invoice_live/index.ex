@@ -3,7 +3,6 @@ defmodule InvoiceAppWeb.InvoiceLive.Index do
 
   alias InvoiceApp.Invoices
   alias InvoiceApp.Invoices.Invoice
-
   alias InvoiceAppWeb.InvoiceLive.InvoiceForm
 
   @impl true

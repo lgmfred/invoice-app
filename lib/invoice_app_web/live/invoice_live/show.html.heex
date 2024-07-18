@@ -9,11 +9,13 @@
 </.header>
 
 <.list>
-  <:item title="Bill from"><%= @invoice.bill_from %></:item>
-  <:item title="Bill to"><%= @invoice.bill_to %></:item>
+  <:item title="Bill from"><%= inspect(@invoice.bill_from) %></:item>
+  <:item title="Bill to"><%= inspect(@invoice.bill_to) %></:item>
+  <:item title="Status"><%= @invoice.status %></:item>
+  <:item title="Date"><%= @invoice.date %></:item>
   <:item title="Payment term"><%= @invoice.payment_term %></:item>
   <:item title="Project description"><%= @invoice.project_description %></:item>
-  <:item title="Items"><%= @invoice.items %></:item>
+  <:item title="Items"><%= inspect(@invoice.items) %></:item>
 </.list>
 
 <.back navigate={~p"/invoices"}>Back to invoices</.back>
@@ -30,6 +32,7 @@
     title={@page_title}
     action={@live_action}
     invoice={@invoice}
+    form={@form}
     patch={~p"/invoices/#{@invoice}"}
   />
 </.modal>

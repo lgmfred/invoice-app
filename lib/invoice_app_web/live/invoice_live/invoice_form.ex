@@ -11,6 +11,11 @@ defmodule InvoiceAppWeb.InvoiceLive.InvoiceForm do
   alias InvoiceApp.Invoices.Item
 
   @valid_terms [1, 7, 14, 30]
+  @default_attrs %{
+    bill_from: Map.from_struct(%BillFrom{}),
+    bill_to: Map.from_struct(%BillTo{}),
+    items: [Map.from_struct(%Item{})]
+  }
 
   embedded_schema do
     embeds_one :bill_from, InvoiceApp.Invoices.BillFrom, on_replace: :update
@@ -21,24 +26,14 @@ defmodule InvoiceAppWeb.InvoiceLive.InvoiceForm do
     field :payment_term, :integer, default: 1
     field :project_description, :string
     belongs_to :user, InvoiceApp.Accounts.User, on_replace: :update
-
-    # # Helper fields for adding/deleting order
-    # field :item_sort, {:array, :integer}
-    # field :item_drop, {:array, :integer}
   end
 
-  def new do
-    default_attrs = %{
-      bill_from: Map.from_struct(%BillFrom{}),
-      bill_to: Map.from_struct(%BillTo{}),
-      items: [Map.from_struct(%Item{})]
-    }
-
-    %InvoiceForm{}
-    |> changeset(default_attrs)
+  def new(invoice \\ %InvoiceForm{}) do
+    attrs = if invoice == %InvoiceForm{}, do: @default_attrs, else: %{}
+    new_changeset(invoice, attrs)
   end
 
-  def new(%Invoice{} = invoice) do
+  def new_changeset(%Invoice{} = invoice, attrs) do
     %InvoiceForm{
       bill_from: invoice.bill_from,
       bill_to: invoice.bill_to,
@@ -48,7 +43,12 @@ defmodule InvoiceAppWeb.InvoiceLive.InvoiceForm do
       payment_term: invoice.payment_term,
       project_description: invoice.project_description
     }
-    |> changeset(%{})
+    |> changeset(attrs)
+  end
+
+  def new_changeset(%InvoiceForm{} = invoice, attrs) do
+    invoice
+    |> changeset(attrs)
   end
 
   @doc false
@@ -61,17 +61,24 @@ defmodule InvoiceAppWeb.InvoiceLive.InvoiceForm do
     |> validate_inclusion(:payment_term, @valid_terms)
     |> cast_embed(:bill_from, with: &BillFrom.changeset/2, required: true)
     |> cast_embed(:bill_to, with: &BillTo.changeset/2, required: true)
-    |> cast_embed(:items, with: &Item.changeset/2, required: true)
+    |> cast_embed(:items,
+      with: &Item.changeset/2,
+      required: true,
+      sort_param: :item_sort,
+      drop_param: :item_drop
+    )
   end
 
   def validate(form, params) do
     form.source.data
+    |> calculate_items_totals()
     |> changeset(params)
     |> Map.put(:action, :validate)
   end
 
   def submit(form, invoice_params) do
     form.source.data
+    |> calculate_items_totals()
     |> changeset(invoice_params)
     |> apply_action(:insert)
     |> format_result()
@@ -95,6 +102,14 @@ defmodule InvoiceAppWeb.InvoiceLive.InvoiceForm do
   end
 
   defp format_result(error), do: error
+
+  defp calculate_items_totals(invoice) do
+    %InvoiceForm{invoice | items: Enum.map(invoice.items, &item_total/1)}
+  end
+
+  def item_total(item) do
+    %Item{item | total: Decimal.mult(item.price, item.quantity)}
+  end
 
   def change_invoice_form(%InvoiceForm{} = invoice, attrs \\ %{}) do
     InvoiceForm.changeset(invoice, attrs)

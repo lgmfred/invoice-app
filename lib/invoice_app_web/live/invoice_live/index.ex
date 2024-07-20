@@ -7,11 +7,7 @@ defmodule InvoiceAppWeb.InvoiceLive.Index do
 
   @impl true
   def mount(_params, _session, socket) do
-    changeset = InvoiceForm.new()
-
-    {:ok,
-     stream(socket, :invoices, Invoices.list_invoices())
-     |> assign_form(changeset)}
+    {:ok, stream(socket, :invoices, Invoices.list_invoices())}
   end
 
   @impl true

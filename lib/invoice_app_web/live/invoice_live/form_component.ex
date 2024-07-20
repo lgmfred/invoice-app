@@ -1,8 +1,8 @@
 defmodule InvoiceAppWeb.InvoiceLive.FormComponent do
-  alias InvoiceAppWeb.InvoiceLive.InvoiceForm
   use InvoiceAppWeb, :live_component
 
   alias InvoiceApp.Invoices
+  alias InvoiceAppWeb.InvoiceLive.InvoiceForm
 
   @impl true
   def render(assigns) do
@@ -42,13 +42,38 @@ defmodule InvoiceAppWeb.InvoiceLive.FormComponent do
           label="Payment Term"
         />
         <.input field={@form[:project_description]} type="text" label="Project Description" />
-        <.inputs_for :let={item} field={@form[:items]}>
-          <input name={@form[:item_sort].name <> "[]"} type="hidden" value={item.id} />
-          <.input field={item[:name]} type="text" label="Item Name" />
-          <.input field={item[:quantity]} type="number" label="Qty" />
-          <.input field={item[:price]} type="number" label="Price" />
-          <.input field={item[:total]} type="number" label="Total" />
-        </.inputs_for>
+        <table class="w-full">
+          <thead>
+            <tr>
+              <th>Item Name</th>
+              <th>Qty</th>
+              <th>Price</th>
+              <th>Total</th>
+              <th class="sr-only">Delete</th>
+            </tr>
+          </thead>
+          <tbody>
+            <.inputs_for :let={item} field={@form[:items]}>
+              <input name={@form[:item_sort].name <> "[]"} type="hidden" value={item.index} />
+              <tr>
+                <td><.input field={item[:name]} type="text" placeholder="Item Name" /></td>
+                <td><.input field={item[:quantity]} type="number" placeholder="1" /></td>
+                <td><.input field={item[:price]} type="number" placeholder="0.00" /></td>
+                <td><.input field={item[:total]} type="number" placeholder="0.00" /></td>
+                <td>
+                  <button
+                    name={@form[:item_drop].name <> "[]"}
+                    value={item.index}
+                    phx-click={JS.dispatch("change")}
+                    type="button"
+                  >
+                    <.icon name="hero-trash" />
+                  </button>
+                </td>
+              </tr>
+            </.inputs_for>
+          </tbody>
+        </table>
         <button
           type="button"
           name={@form[:item_sort].name <> "[]"}
@@ -57,6 +82,7 @@ defmodule InvoiceAppWeb.InvoiceLive.FormComponent do
         >
           + Add New Item
         </button>
+        <input type="hidden" name={@form[:item_drop].name <> "[]"} />
         <:actions>
           <.button phx-disable-with="Saving...">Save & Send</.button>
         </:actions>
@@ -137,5 +163,16 @@ defmodule InvoiceAppWeb.InvoiceLive.FormComponent do
 
   defp term_options do
     ["Net 1 Day": 1, "Net 7 Days": 7, "Net 14 Days": 14, "Net 30 Days": 30]
+  end
+
+  def items_total(items) do
+    items
+    |> Enum.reduce(0, fn item, acc ->
+      acc + item.quantity * item.price
+    end)
+  end
+
+  def item_total(item) do
+    item.quantity * item.price
   end
 end

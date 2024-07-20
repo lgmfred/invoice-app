@@ -166,8 +166,8 @@ defmodule InvoiceAppWeb.InvoicesLive do
   def circle_fill(:draft), do: "fill-gray-500"
 
   def badge_text(:paid), do: "Paid"
-  def badge_text(:pending), do: "Paid"
-  def badge_text(:draft), do: "Paid"
+  def badge_text(:pending), do: "Pending"
+  def badge_text(:draft), do: "Draft"
 
   defp status_options do
     [

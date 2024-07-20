@@ -7,7 +7,10 @@ defmodule InvoiceAppWeb.InvoiceLive.Index do
 
   @impl true
   def mount(_params, _session, socket) do
-    {:ok, stream(socket, :invoices, Invoices.list_invoices())}
+    {:ok,
+     socket
+     |> stream(:invoices, Invoices.list_invoices())
+     |> assign(:filter, %{status: ""})}
   end
 
   @impl true
@@ -45,15 +48,37 @@ defmodule InvoiceAppWeb.InvoiceLive.Index do
     {:noreply, stream_insert(socket, :invoices, invoice)}
   end
 
-  @impl true
-  def handle_event("delete", %{"id" => id}, socket) do
-    invoice = Invoices.get_invoice!(id)
-    {:ok, _} = Invoices.delete_invoice(invoice)
-
-    {:noreply, stream_delete(socket, :invoices, invoice)}
-  end
-
   def assign_form(socket, %Ecto.Changeset{} = changeset) do
     assign(socket, :form, to_form(changeset))
+  end
+
+  def badge_colors(:paid), do: "bg-green-100 text-green-500"
+  def badge_colors(:pending), do: "bg-orange-100 text-orange-500"
+  def badge_colors(:draft), do: "bg-gray-100 text-gray-500"
+
+  def circle_fill(:paid), do: "fill-green-500"
+  def circle_fill(:pending), do: "fill-orange-500"
+  def circle_fill(:draft), do: "fill-gray-500"
+
+  def badge_text(:paid), do: "Paid"
+  def badge_text(:pending), do: "Pending"
+  def badge_text(:draft), do: "Draft"
+
+  defp status_options do
+    [
+      Filter: "",
+      Paid: "paid",
+      Pending: "pending",
+      Draft: "draft"
+    ]
+  end
+
+  def count_invoices([]), do: 0
+  def count_invoices([_]), do: 1
+  def count_invoices(invoices), do: Enum.count(invoices)
+
+  defp total_amount(items) do
+    items
+    |> Enum.reduce(0, fn item, acc -> Decimal.add(acc, item.total) end)
   end
 end

@@ -1,24 +1,153 @@
-<.header>
-  Invoice <%= @invoice.id %>
-  <:subtitle>This is a invoice record from your database.</:subtitle>
-  <:actions>
-    <.link patch={~p"/invoices/#{@invoice}/show/edit"} phx-click={JS.push_focus()}>
-      <.button>Edit invoice</.button>
+<div class="flex flex-col gap-4 text-[#858BB2] dark:text-[#DFE3FA]">
+  <.link navigate={~p"/invoices"} class="flex gap-2 items-center">
+    <.icon name="hero-chevron-left-solid" class="h-4 w-4 text-[#7C5DFA]" />
+    <span class="font-bold text-[#0C0E16] dark:text-white">Go Back</span>
+  </.link>
+
+  <div class="flex justify-between items-stretch md:items-center bg-white dark:bg-[#1E2139] py-4 px-8 rounded-md">
+    <div class="flex gap-6 grow md:grow-0 items-center justify-between">
+      <span>Status</span>
+      <span class={[
+        Index.badge_colors(@invoice.status),
+        "inline-flex w-24 h-8 justify-center items-center gap-x-1.5 rounded-md px-2 py-1 text-xs font-bold"
+      ]}>
+        <svg
+          class={[Index.circle_fill(@invoice.status), "h-2 w-2"]}
+          viewBox="0 0 6 6"
+          aria-hidden="true"
+        >
+          <circle cx="3" cy="3" r="3" />
+        </svg>
+        <%= Index.badge_text(@invoice.status) %>
+      </span>
+    </div>
+    <div class="hidden md:flex gap-2 justify-between items-center ">
+      <.link
+        patch={~p"/invoices/#{@invoice}/show/edit"}
+        phx-click={JS.push_focus()}
+        class="inline-flex sm:order-last justify-center rounded-full bg-gray-200 px-3 py-2 text-sm font-semibold text-gray-500 shadow-sm hover:bg-gray-100 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-gray-600"
+      >
+        Edit
+      </.link>
+
+      <.link
+        phx-click={JS.push("delete", value: %{id: @invoice.id})}
+        data-confirm="Are you sure?"
+        class="inline-flex sm:order-last justify-center rounded-full bg-red-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-red-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-red-600"
+      >
+        Delete
+      </.link>
+      <.link class="inline-flex sm:order-last justify-center rounded-full bg-violet-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-violet-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-violet-600">
+        Mark as Paid
+      </.link>
+    </div>
+  </div>
+
+  <div class="flex gap-8 flex-col justify-between items-stretch bg-white dark:bg-[#1E2139] py-4 px-8 rounded-md">
+    <div class="flex grow flex-col md:flex-row justify-between items-stretch">
+      <div>
+        <span>#</span><span class="font-bold text-[#0C0E16] dark:text-white"><%= @invoice.id %></span>
+        <p><%= @invoice.project_description %></p>
+      </div>
+      <div>
+        <p><%= @invoice.bill_from.street_address %></p>
+        <p><%= @invoice.bill_from.city %></p>
+        <p><%= @invoice.bill_from.post_code %></p>
+        <p><%= @invoice.bill_from.country %></p>
+      </div>
+    </div>
+
+    <div class="flex gap-8 md:gap-20 flex-col md:flex-row">
+      <div class="flex gap-16">
+        <div class="flex flex-col justify-between">
+          <div>
+            <p>Invoice Date</p>
+            <p class="font-bold text-[#0C0E16] dark:text-white">
+              <%= Calendar.strftime(@invoice.date, "%d %b %Y") %>
+            </p>
+          </div>
+          <div>
+            <p>Payment Due</p>
+            <p class="font-bold text-[#0C0E16] dark:text-white">
+              <%= due_date(@invoice.date, @invoice.payment_term) %>
+            </p>
+          </div>
+        </div>
+        <div>
+          <p>Bill To</p>
+          <p class="font-bold text-[#0C0E16] dark:text-white"><%= @invoice.bill_to.name %></p>
+          <p><%= @invoice.bill_to.street_address %></p>
+          <p><%= @invoice.bill_to.city %></p>
+          <p><%= @invoice.bill_to.post_code %></p>
+          <p><%= @invoice.bill_to.country %></p>
+        </div>
+      </div>
+      <div>
+        <p>Sent to</p>
+        <p class="font-bold text-[#0C0E16] dark:text-white"><%= @invoice.bill_to.email %></p>
+      </div>
+    </div>
+    <div class="rounded-lg overflow-hidden">
+      <table class="w-full bg-[#F9FAFE] dark:bg-[#252945] font-bold">
+        <thead class="hidden md:table-header-group">
+          <tr>
+            <th class="font-normal text-left p-4">Item Name</th>
+            <th class="font-normal text-center p-4">Qty</th>
+            <th class="font-normal text-right p-4">Price</th>
+            <th class="font-normal text-right p-4">Total</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr :for={item <- @invoice.items}>
+            <td class="p-4">
+              <p class="text-[#0C0E16] dark:text-white"><%= item.name %></p>
+              <p class="md:hidden font-normal"><%= "#{item.quantity} × £ #{item.price}" %></p>
+            </td>
+            <td class="hidden md:table-cell text-center p-4"><%= item.quantity %></td>
+            <td class="hidden md:table-cell text-right p-4">&pound; <%= item.price %></td>
+            <td class="text-right p-4 text-[#0C0E16] dark:text-white">
+              &pound; <%= item.total %>
+            </td>
+          </tr>
+        </tbody>
+        <tfoot class="bg-[#373B53] dark:bg-[#0C0E16]">
+          <tr>
+            <td class="hidden md:table-cell p-4 font-normal" colspan="3">
+              <p>Amount Due</p>
+            </td>
+            <td class="md:hidden p-4 font-normal">
+              <p>Grand Total</p>
+            </td>
+            <td class="font-bold text-right p-4">
+              &pound; <%= Enum.reduce(@invoice.items, 0, fn item, acc ->
+                Decimal.add(acc, item.total)
+              end) %>
+            </td>
+          </tr>
+        </tfoot>
+      </table>
+    </div>
+  </div>
+  <div class="flex md:hidden justify-between items-stretch md:items-center bg-white dark:bg-[#1E2139] py-4 px-8 rounded-md">
+    <.link
+      patch={~p"/invoices/#{@invoice}/show/edit"}
+      phx-click={JS.push_focus()}
+      class="inline-flex sm:order-last justify-center rounded-full bg-gray-200 px-3 py-2 text-sm font-semibold text-gray-500 shadow-sm hover:bg-gray-100 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-gray-600"
+    >
+      Edit
     </.link>
-  </:actions>
-</.header>
-
-<.list>
-  <:item title="Bill from"><%= inspect(@invoice.bill_from) %></:item>
-  <:item title="Bill to"><%= inspect(@invoice.bill_to) %></:item>
-  <:item title="Status"><%= @invoice.status %></:item>
-  <:item title="Date"><%= @invoice.date %></:item>
-  <:item title="Payment term"><%= @invoice.payment_term %></:item>
-  <:item title="Project description"><%= @invoice.project_description %></:item>
-  <:item title="Items"><%= inspect(@invoice.items) %></:item>
-</.list>
-
-<.back navigate={~p"/invoices"}>Back to invoices</.back>
+    <.link
+      phx-click={JS.push("delete", value: %{id: @invoice.id})}
+      data-confirm="Are you sure?"
+      class="inline-flex sm:order-last justify-center rounded-full bg-red-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-red-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-red-600"
+    >
+      Delete
+    </.link>
+    <.link class="inline-flex sm:order-last justify-center rounded-full bg-violet-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-violet-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-violet-600">
+      Mark as Paid
+    </.link>
+  </div>
+</div>
 
 <.modal
   :if={@live_action == :edit}

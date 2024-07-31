@@ -7,10 +7,14 @@ defmodule InvoiceAppWeb.InvoiceLive.Index do
 
   @impl true
   def mount(_params, _session, socket) do
+    user = socket.assigns.current_user
+    filter = %{user_id: user.id, status: ""}
+    invoices = Invoices.list_invoices(filter)
+
     {:ok,
      socket
-     |> stream(:invoices, Invoices.list_invoices())
-     |> assign(:filter, %{status: ""})}
+     |> stream(:invoices, invoices)
+     |> assign(:filter, filter)}
   end
 
   @impl true
@@ -41,6 +45,20 @@ defmodule InvoiceAppWeb.InvoiceLive.Index do
     socket
     |> assign(:page_title, "Listing Invoices")
     |> assign(:invoice, nil)
+  end
+
+  @impl true
+  def handle_event("filter", %{"status" => status}, socket) do
+    filter =
+      socket.assigns.filter
+      |> Map.replace!(:status, status)
+
+    invoices = Invoices.list_invoices(filter)
+
+    {:noreply,
+     socket
+     |> stream(:invoices, invoices, reset: true)
+     |> assign(:filter, filter)}
   end
 
   @impl true

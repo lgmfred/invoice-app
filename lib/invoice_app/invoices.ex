@@ -23,6 +23,32 @@ defmodule InvoiceApp.Invoices do
   end
 
   @doc """
+  Returns the list of invoices matching the given filter.
+
+  ## Examples filter:
+
+  %{user_id: 1, status: "paid"}
+  """
+  def list_invoices(filter) when is_map(filter) do
+    from(Invoice)
+    |> filter_by_user_id(filter)
+    |> filter_by_status(filter)
+    |> Repo.all()
+  end
+
+  defp filter_by_user_id(query, %{user_id: ""}), do: query
+
+  defp filter_by_user_id(query, %{user_id: user_id}) do
+    where(query, user_id: ^user_id)
+  end
+
+  defp filter_by_status(query, %{status: ""}), do: query
+
+  defp filter_by_status(query, %{status: status}) do
+    where(query, status: ^status)
+  end
+
+  @doc """
   Gets a single invoice.
 
   Raises `Ecto.NoResultsError` if the Invoice does not exist.

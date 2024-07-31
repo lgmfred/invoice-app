@@ -1,4 +1,5 @@
 defmodule InvoiceAppWeb.UserLoginLive do
+  alias Phoenix.Flash
   use InvoiceAppWeb, :live_view
 
   @impl Phoenix.LiveView
@@ -117,7 +118,7 @@ defmodule InvoiceAppWeb.UserLoginLive do
 
   @impl Phoenix.LiveView
   def mount(_params, _session, socket) do
-    email = live_flash(socket.assigns.flash, :email)
+    email = Flash.get(socket.assigns.flash, :email)
     form = to_form(%{"email" => email}, as: "user")
     {:ok, assign(socket, :form, form), temporary_assigns: [form: form]}
   end

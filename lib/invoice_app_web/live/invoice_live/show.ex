@@ -30,6 +30,13 @@ defmodule InvoiceAppWeb.InvoiceLive.Show do
     {:noreply, push_navigate(socket, to: ~p"/invoices")}
   end
 
+  def handle_event("change-status", %{"id" => id}, socket) do
+    invoice = Invoices.get_invoice!(id)
+    status = change_status(invoice.status)
+    {:ok, invoice} = Invoices.update_invoice(invoice, %{status: status})
+    {:noreply, push_patch(socket, to: ~p"/invoices/#{invoice.id}")}
+  end
+
   defp page_title(:show), do: "Show Invoice"
   defp page_title(:edit), do: "Edit Invoice"
 
@@ -41,5 +48,21 @@ defmodule InvoiceAppWeb.InvoiceLive.Show do
     date
     |> Date.add(days)
     |> Calendar.strftime("%d %b %Y")
+  end
+
+  def change_status(status) do
+    %{
+      :paid => "draft",
+      :pending => "paid",
+      :draft => "pending"
+    }[status]
+  end
+
+  def status_change_text(status) do
+    %{
+      :paid => "Mark as Draft",
+      :pending => "Mark as Paid",
+      :draft => "Mark as Pending"
+    }[status]
   end
 end

@@ -2,7 +2,8 @@ defmodule InvoiceApp.Repo.Migrations.CreateInvoices do
   use Ecto.Migration
 
   def change do
-    create table(:invoices) do
+    create table(:invoices, primary_key: false) do
+      add :id, :uuid, primary_key: true
       add :bill_from, :map, null: false
       add :bill_to, :map, null: false
       add :date, :date, null: false
@@ -18,7 +19,7 @@ defmodule InvoiceApp.Repo.Migrations.CreateInvoices do
     create index(:invoices, [:user_id])
 
     alter table(:users) do
-      add :invoices, references(:invoices, on_delete: :delete_all)
+      add :invoices, references(:invoices, type: :uuid, on_delete: :delete_all)
     end
   end
 end

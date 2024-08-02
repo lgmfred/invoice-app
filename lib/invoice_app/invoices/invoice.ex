@@ -10,6 +10,7 @@ defmodule InvoiceApp.Invoices.Invoice do
 
   @valid_terms [1, 7, 14, 30]
 
+  @primary_key {:id, :binary_id, autogenerate: true}
   schema "invoices" do
     embeds_one :bill_from, InvoiceApp.Invoices.BillFrom, on_replace: :update
     embeds_one :bill_to, InvoiceApp.Invoices.BillTo, on_replace: :update

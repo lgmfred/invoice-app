@@ -72,7 +72,7 @@
     >
       <div class="flex flex-col md:flex-row gap-4 justify-between items-start md:items-center">
         <h3>
-          <span class="text-[#858BB2]">#</span><span class="font-bold"><%= invoice.id %></span>
+          <span class="text-[#858BB2]">#</span><span class="font-bold uppercase"><%= String.slice(invoice.id, 0, 6) %></span>
         </h3>
         <p class="text-[#858BB2] -mb-4 md:mb-0">
           <span>Due </span>

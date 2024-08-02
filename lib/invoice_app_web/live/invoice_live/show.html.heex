@@ -48,9 +48,9 @@
   </div>
 
   <div class="flex gap-8 flex-col justify-between items-stretch bg-white dark:bg-[#1E2139] py-4 px-8 rounded-md">
-    <div class="flex grow flex-col md:flex-row justify-between items-stretch">
+    <div class="flex grow flex-col gap-4 md:flex-row justify-between items-stretch">
       <div>
-        <span>#</span><span class="font-bold text-[#0C0E16] dark:text-white"><%= @invoice.id %></span>
+        <span>#</span><span class="font-bold uppercase text-[#0C0E16] dark:text-white"><%= String.slice(@invoice.id, 0, 6) %></span>
         <p><%= @invoice.project_description %></p>
       </div>
       <div>

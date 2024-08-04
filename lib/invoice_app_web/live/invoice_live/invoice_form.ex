@@ -14,6 +14,7 @@ defmodule InvoiceAppWeb.InvoiceLive.InvoiceForm do
   @default_attrs %{
     bill_from: Map.from_struct(%BillFrom{}),
     bill_to: Map.from_struct(%BillTo{}),
+    date: Date.utc_today(),
     items: [Map.from_struct(%Item{})]
   }
 

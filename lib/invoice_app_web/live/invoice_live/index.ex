@@ -4,6 +4,7 @@ defmodule InvoiceAppWeb.InvoiceLive.Index do
   alias InvoiceApp.Invoices
   alias InvoiceApp.Invoices.Invoice
   alias InvoiceAppWeb.InvoiceLive.InvoiceForm
+  alias InvoiceAppWeb.InvoiceLive.Show
 
   @impl true
   def mount(_params, _session, socket) do

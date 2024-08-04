@@ -1,4 +1,4 @@
-<div class="flex flex-col gap-20">
+<div class="flex flex-col gap-10">
   <%!-- List page header actions --%>
   <div class="flex justify-between">
     <div class="flex flex-col">
@@ -76,7 +76,7 @@
         </h3>
         <p class="text-[#858BB2] -mb-4 md:mb-0">
           <span>Due </span>
-          <span><%= Calendar.strftime(invoice.date, "%d %b %Y") %></span>
+          <span><%= Show.due_date(invoice.date, invoice.payment_term) %></span>
         </p>
         <p class="hidden md:inline-block text-[#858BB2] dark:text-white">
           <%= invoice.bill_to.name %>
@@ -126,7 +126,6 @@
     </.link>
   </div>
 </div>
-
 <.modal :if={@live_action == :new} id="invoice-modal" show on_cancel={JS.patch(~p"/invoices")}>
   <.live_component
     module={InvoiceAppWeb.InvoiceLive.FormComponent}

@@ -84,7 +84,7 @@
         <h3 class="md:hidden font-bold -mb-2">
           <span>£ </span>
           <span>
-            <%= total_amount(invoice.items) %>
+            <%= grand_total(invoice.items) %>
           </span>
         </h3>
       </div>
@@ -95,7 +95,7 @@
         </p>
         <h3 class="hidden md:inline-block">
           <span>£ </span>
-          <span><%= total_amount(invoice.items) %></span>
+          <span><%= grand_total(invoice.items) %></span>
         </h3>
         <span class={[
           badge_colors(invoice.status),

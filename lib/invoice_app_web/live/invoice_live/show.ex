@@ -65,4 +65,10 @@ defmodule InvoiceAppWeb.InvoiceLive.Show do
       :draft => "Mark as Pending"
     }[status]
   end
+
+  defp grand_total(items) do
+    items
+    |> Enum.reduce(0, fn item, acc -> Decimal.add(acc, item.total) end)
+    |> Number.Delimit.number_to_delimited(precision: 2)
+  end
 end

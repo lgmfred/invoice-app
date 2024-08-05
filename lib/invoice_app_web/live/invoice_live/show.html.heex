@@ -105,12 +105,16 @@
           <tr :for={item <- @invoice.items}>
             <td class="p-4">
               <p class="text-[#0C0E16] dark:text-white"><%= item.name %></p>
-              <p class="md:hidden font-normal"><%= "#{item.quantity} × £ #{item.price}" %></p>
+              <p class="md:hidden font-normal">
+                <%= "#{item.quantity} × £ #{Number.Delimit.number_to_delimited(item.price, precison: 2)}" %>
+              </p>
             </td>
             <td class="hidden md:table-cell text-center p-4"><%= item.quantity %></td>
-            <td class="hidden md:table-cell text-right p-4">&pound; <%= item.price %></td>
+            <td class="hidden md:table-cell text-right p-4">
+              &pound; <%= Number.Delimit.number_to_delimited(item.price) %>
+            </td>
             <td class="text-right p-4 text-[#0C0E16] dark:text-white">
-              &pound; <%= item.total %>
+              &pound; <%= Number.Delimit.number_to_delimited(item.total) %>
             </td>
           </tr>
         </tbody>
@@ -123,9 +127,7 @@
               <p>Grand Total</p>
             </td>
             <td class="font-bold text-right p-4">
-              &pound; <%= Enum.reduce(@invoice.items, 0, fn item, acc ->
-                Decimal.add(acc, item.total)
-              end) %>
+              &pound; <%= grand_total(@invoice.items) %>
             </td>
           </tr>
         </tfoot>

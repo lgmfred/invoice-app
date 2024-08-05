@@ -96,8 +96,9 @@ defmodule InvoiceAppWeb.InvoiceLive.Index do
   def count_invoices([_]), do: 1
   def count_invoices(invoices), do: Enum.count(invoices)
 
-  defp total_amount(items) do
+  defp grand_total(items) do
     items
     |> Enum.reduce(0, fn item, acc -> Decimal.add(acc, item.total) end)
+    |> Number.Delimit.number_to_delimited(precision: 2)
   end
 end

@@ -92,7 +92,8 @@ defmodule InvoiceApp.MixProject do
       {:excoveralls, "~> 0.18", only: :test},
       {:faker, "~> 0.17", only: [:dev, :test]},
       {:github_workflows_generator, "~> 0.1", only: :dev, runtime: false},
-      {:countries, "~> 1.6"}
+      {:countries, "~> 1.6"},
+      {:number, "~> 1.0.1"}
     ]
   end
 

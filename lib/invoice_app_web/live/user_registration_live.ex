@@ -68,6 +68,9 @@ defmodule InvoiceAppWeb.UserRegistrationLive do
         />
         <.input field={@form[:avatar_url]} type="hidden" />
 
+        <div>
+          <%= inspect(@error_details) %>
+        </div>
         <div class="grid grid-cols-2">
           <div class="inline-flex items-center gap-x-1.5 px-1.5 py-0.5">
             <svg class="h-3 w-3 fill-gray-400" viewBox="0 0 6 6" aria-hidden="true">
@@ -125,7 +128,7 @@ defmodule InvoiceAppWeb.UserRegistrationLive do
 
     socket =
       socket
-      |> assign(trigger_submit: false, check_errors: false)
+      |> assign(trigger_submit: false, check_errors: false, error_details: %{})
       |> assign_form(changeset)
 
     {:ok, socket, temporary_assigns: [form: nil]}
@@ -152,6 +155,9 @@ defmodule InvoiceAppWeb.UserRegistrationLive do
   def handle_event("validate", %{"user" => user_params}, socket) do
     changeset = Accounts.change_user_registration(%User{}, user_params)
 
+    error_details = error_details(changeset)
+    socket = assign(socket, :error_details, error_details)
+
     {:noreply, assign_form(socket, Map.put(changeset, :action, :validate))}
   end
 
@@ -165,32 +171,24 @@ defmodule InvoiceAppWeb.UserRegistrationLive do
     end
   end
 
-  def password_strength(errors) do
-    errors = Keyword.get_values(errors, :password)
+  @doc """
+  Translates the changeset errors and return a map of
+  error messages. For example:
 
-    def_acc =
-      %{
-        "number" => false,
-        "12+ characters" => false,
-        "special character (*#$%&!-@)" => false,
-        "upper-case" => false
-      }
+  %{start_date: ["can't be blank"], end_date: ["can't be blank"]}
+  """
+  def error_details(changeset) do
+    case Ecto.Changeset.get_change(changeset, :password) do
+      nil ->
+        %{}
 
-    Enum.reduce(errors, def_acc, fn
-      {"at least one punctuation character", _}, acc ->
-        %{acc | "special character (*#$%&!-@)" => true}
-
-      {"at least one digit", _}, acc ->
-        %{acc | "number" => true}
-
-      {"at least one upper case character", _}, acc ->
-        %{acc | "upper-case" => true}
-
-      {"should be at least 12 characters", _}, acc ->
-        %{acc | "12+ characters" => true}
-
-      {_error, _lis}, acc ->
-        acc
-    end)
+      _ ->
+        Ecto.Changeset.traverse_errors(changeset, fn {msg, opts} ->
+          Enum.reduce(opts, msg, fn {key, value}, acc ->
+            String.replace(acc, "%{#{key}}", to_string(value))
+          end)
+        end)
+        |> Map.take([:password])
+    end
   end
 end

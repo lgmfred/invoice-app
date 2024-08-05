@@ -34,7 +34,13 @@ defmodule InvoiceAppWeb.InvoiceLive.FormComponent do
                 <.input field={bill_from[:post_code]} type="text" label="Post code" class="" />
               </div>
               <div class="col-span-2 md:col-span-1">
-                <.input field={bill_from[:country]} type="text" label="Country" class="col-span-2" />
+                <.input
+                  field={bill_from[:country]}
+                  type="select"
+                  label="Country"
+                  options={country_options()}
+                  class="col-span-2"
+                />
               </div>
             </div>
           </.inputs_for>
@@ -57,7 +63,13 @@ defmodule InvoiceAppWeb.InvoiceLive.FormComponent do
                 <.input field={bill_to[:post_code]} type="text" label="Post Code" />
               </div>
               <div class="col-span-2 md:col-span-1">
-                <.input field={bill_to[:country]} type="text" label="Country" />
+                <.input
+                  field={bill_to[:country]}
+                  type="select"
+                  label="Country"
+                  options={country_options()}
+                  required
+                />
               </div>
             </div>
           </.inputs_for>
@@ -253,5 +265,14 @@ defmodule InvoiceAppWeb.InvoiceLive.FormComponent do
 
   def item_total(item) do
     item.quantity * item.price
+  end
+
+  def country_options do
+    tl =
+      Countries.all()
+      |> Enum.into(%{}, fn x -> {x.name, x.alpha2} end)
+      |> Enum.sort()
+
+    [{"Choose Country", ""} | tl]
   end
 end

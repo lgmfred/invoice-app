@@ -594,6 +594,15 @@ defmodule InvoiceAppWeb.SettingsLive do
     """
   end
 
+  def country_options do
+    tl =
+      Countries.all()
+      |> Enum.into(%{}, fn x -> {x.name, x.alpha2} end)
+      |> Enum.sort()
+
+    [{"Choose Country", ""} | tl]
+  end
+
   def error_to_string(:too_large), do: "Too large"
   def error_to_string(:not_accepted), do: "Invalid file type"
   def error_to_string(:too_many_files), do: "Too many files"

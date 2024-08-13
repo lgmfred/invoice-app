@@ -3,7 +3,9 @@ defmodule InvoiceAppWeb.SettingsLive do
   use InvoiceAppWeb, :live_view
 
   alias InvoiceApp.Accounts
+  alias InvoiceApp.Accounts.BusinessAddress
   alias InvoiceApp.Repo
+  alias InvoiceAppWeb.CustomComponents
   alias Phoenix.LiveView.JS
 
   @impl Phoenix.LiveView
@@ -19,6 +21,7 @@ defmodule InvoiceAppWeb.SettingsLive do
   @impl Phoenix.LiveView
   def handle_params(%{"tab" => "personal"}, _uri, socket) do
     selected_tab = Enum.find(socket.assigns.tabs, fn {key, _val} -> key == :personal end)
+    changeset = address_changeset(socket)
 
     {:noreply,
      socket
@@ -29,6 +32,7 @@ defmodule InvoiceAppWeb.SettingsLive do
        progress: &handle_progress/3,
        auto_upload: true
      )
+     |> assign_form(changeset)
      |> assign(:page_title, "Settings - Personal")
      |> assign(:selected_tab, selected_tab)}
   end
@@ -36,9 +40,14 @@ defmodule InvoiceAppWeb.SettingsLive do
   @impl Phoenix.LiveView
   def handle_params(%{"tab" => "password"}, _uri, socket) do
     selected_tab = Enum.find(socket.assigns.tabs, fn {key, _val} -> key == :password end)
+    user = socket.assigns.current_user
+    changeset = Accounts.change_user_password(user)
 
     {:noreply,
      socket
+     |> assign(:current_password, nil)
+     |> assign(:current_email, user.email)
+     |> assign_form(changeset)
      |> assign(:page_title, "Settings - Password")
      |> assign(:selected_tab, selected_tab)}
   end
@@ -67,12 +76,16 @@ defmodule InvoiceAppWeb.SettingsLive do
         :if={@selected_tab == {:personal, "Personal"}}
         uploads={@uploads}
         current_user={@current_user}
+        form={@form}
         tabs={@tabs}
         selected_tab={@selected_tab}
       />
       <.password_form
         :if={@selected_tab == {:password, "Password"}}
         current_user={@current_user}
+        form={@form}
+        current_password={@current_password}
+        current_email={@current_email}
         tabs={@tabs}
         selected_tab={@selected_tab}
       />
@@ -90,6 +103,37 @@ defmodule InvoiceAppWeb.SettingsLive do
   @impl Phoenix.LiveView
   def handle_event("validate", _params, socket) do
     {:noreply, socket}
+  end
+
+  @impl Phoenix.LiveView
+  def handle_event("validate-password", params, socket) do
+    %{"current_password" => password, "user" => user_params} = params
+
+    form =
+      socket.assigns.current_user
+      |> Accounts.change_user_password(user_params)
+      |> Map.put(:action, :validate)
+      |> to_form()
+
+    {:noreply, assign(socket, form: form, current_password: password)}
+  end
+
+  @impl Phoenix.LiveView
+  def handle_event("update-password", params, socket) do
+    %{"current_password" => password, "user" => user_params} = params
+    user = socket.assigns.current_user
+
+    case Accounts.update_user_password(user, password, user_params) do
+      {:ok, user} ->
+        {:noreply,
+         socket
+         |> assign(current_user: user)
+         |> put_flash(:info, "Password updated successfully.")
+         |> redirect(to: ~p"/users/log_in")}
+
+      {:error, changeset} ->
+        {:noreply, assign(socket, form: to_form(changeset))}
+    end
   end
 
   def handle_event("delete-avatar", _params, socket) do
@@ -224,7 +268,7 @@ defmodule InvoiceAppWeb.SettingsLive do
           </button>
         </div>
       </form>
-      <form class="flex flex-col gap-4">
+      <.form for={@form} class="flex flex-col gap-4">
         <h2 class="font-medium text-xl">Edit Profile Information</h2>
         <div class="grid grid-cols-1 gap-y-6 sm:grid-cols-6 sm:gap-x-6">
           <div class="sm:col-span-3">
@@ -339,7 +383,7 @@ defmodule InvoiceAppWeb.SettingsLive do
           </div>
           <.save_delete_buttons />
         </div>
-      </form>
+      </.form>
     </div>
     """
   end
@@ -347,42 +391,50 @@ defmodule InvoiceAppWeb.SettingsLive do
   def password_form(assigns) do
     ~H"""
     <div class="mx-auto max-w-3xl px-4 py-10 sm:px-6 lg:px-8 lg:py-12 rounded-md bg-white dark:bg-[#1E2139]">
-      <form class="flex flex-col gap-4">
+      <.form
+        for={@form}
+        id="password_form"
+        phx-change="validate-password"
+        phx-submit="update-password"
+        class="flex flex-col gap-4"
+      >
         <%!-- Avatar render and update section --%>
         <.render_avatar current_user={@current_user} />
         <h2 class="font-medium text-xl">Change Password</h2>
         <div class="grid grid-cols-1 gap-y-6 sm:grid-cols-6 sm:gap-x-6">
           <div class="col-span-6">
-            <label
-              for="email-address"
-              class="block text-sm font-medium leading-6 text-[#7E88C3] dark:text-[#DFE3FA]"
-            >
-              Old password
-            </label>
-            <input
-              id="current-password"
+            <CustomComponents.input
+              field={@form[:email]}
+              type="hidden"
+              id="hidden_user_email"
+              value={@current_email}
+            />
+          </div>
+          <div class="col-span-6">
+            <CustomComponents.input
+              field={@form[:current_password]}
               name="current_password"
               type="password"
-              autocomplete="current-password"
+              label="Old password"
+              id="current_password_for_password"
+              value={@current_password}
               required
-              class="mt-2 block w-full rounded-md border-0 py-1.5 font-bold dark:bg-[#303559] shadow-sm ring-1 ring-inset ring-[#DFE3FA] dark:ring-[#303559] placeholder:text-slate-400 focus:ring-1 focus:ring-inset focus:ring-[#0C0E16] dark:focus:ring-white sm:text-sm sm:leading-6"
+            />
+          </div>
+          <div class="col-span-6">
+            <CustomComponents.input
+              field={@form[:password]}
+              type="password"
+              label="New password"
+              required
             />
           </div>
 
           <div class="col-span-6">
-            <label
-              for="email-address"
-              class="block text-sm font-medium leading-6 text-[#7E88C3] dark:text-[#DFE3FA]"
-            >
-              New password
-            </label>
-            <input
-              id="new-password"
-              name="new_password"
+            <CustomComponents.input
+              field={@form[:password_confirmation]}
               type="password"
-              autocomplete="new-password"
-              required
-              class="mt-2 block w-full rounded-md border-0 py-1.5 font-bold dark:bg-[#303559] shadow-sm ring-1 ring-inset ring-[#DFE3FA] dark:ring-[#303559] placeholder:text-slate-400 focus:ring-1 focus:ring-inset focus:ring-[#0C0E16] dark:focus:ring-white sm:text-sm sm:leading-6"
+              label="Confirm new password"
             />
           </div>
 
@@ -406,7 +458,7 @@ defmodule InvoiceAppWeb.SettingsLive do
           </div>
           <.save_delete_buttons />
         </div>
-      </form>
+      </.form>
     </div>
     """
   end
@@ -606,4 +658,26 @@ defmodule InvoiceAppWeb.SettingsLive do
   def error_to_string(:too_large), do: "Too large"
   def error_to_string(:not_accepted), do: "Invalid file type"
   def error_to_string(:too_many_files), do: "Too many files"
+
+  defp address_changeset(socket, params \\ %{}) do
+    if socket.assigns.current_user.business_address do
+      socket.assigns.current_user.business_address
+      |> BusinessAddress.changeset(params)
+    else
+      %BusinessAddress{}
+      |> BusinessAddress.changeset()
+    end
+  end
+
+  defp assign_form(socket, %Ecto.Changeset{} = changeset) do
+    form = to_form(changeset)
+
+    if changeset.valid? do
+      socket
+      |> assign(:form, form)
+      |> assign(:check_errors, false)
+    else
+      assign(socket, :form, form)
+    end
+  end
 end

@@ -183,12 +183,18 @@ defmodule InvoiceAppWeb.UserRegistrationLive do
         %{}
 
       _ ->
-        Ecto.Changeset.traverse_errors(changeset, fn {msg, opts} ->
-          Enum.reduce(opts, msg, fn {key, value}, acc ->
-            String.replace(acc, "%{#{key}}", to_string(value))
-          end)
-        end)
-        |> Map.take([:password])
+        traverse_errors(changeset)
     end
+  end
+
+  defp traverse_errors(changeset) do
+    Ecto.Changeset.traverse_errors(changeset, &traverse_error/1)
+    |> Map.take([:password])
+  end
+
+  defp traverse_error({msg, opts}) do
+    Enum.reduce(opts, msg, fn {key, value}, acc ->
+      String.replace(acc, "%{#{key}}", to_string(value))
+    end)
   end
 end

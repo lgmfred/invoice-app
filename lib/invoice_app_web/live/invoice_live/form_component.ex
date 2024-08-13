@@ -219,13 +219,9 @@ defmodule InvoiceAppWeb.InvoiceLive.FormComponent do
   end
 
   defp save_invoice(socket, :new, %{"save-as" => status, "invoice_form" => params}) do
-    IO.inspect(params, label: "Initial params")
     form = socket.assigns.form
     user = socket.assigns.current_user
-
     params = if status == "draft", do: Map.put(params, "status", "draft"), else: params
-
-    IO.inspect(params, label: "Final params")
 
     with {:ok, %{invoice: invoice_data}} <- InvoiceForm.submit(form, params),
          {:ok, invoice} <- Invoices.create_invoice(user, invoice_data) do

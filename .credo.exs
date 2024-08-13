@@ -36,7 +36,8 @@
           ~r"/deps/",
           ~r"/node_modules/",
           "lib/invoice_app_web/components/core_components.ex",
-          "test/support/data_case.ex"
+          "test/support/data_case.ex",
+          "lib/invoice_app_web/components/custom_components.ex"
         ]
       },
       #

@@ -99,8 +99,13 @@ defmodule InvoiceAppWeb.CustomComponents do
       <select
         id={@id}
         name={@name}
-        class="mt-2 block w-full rounded-md border border-gray-300 bg-white
-          shadow-sm focus:border-zinc-400 focus:ring-0 sm:text-sm"
+        class={[
+          "mt-2 block w-full rounded-md border-0 py-1.5 font-bold dark:bg-[#303559] shadow-sm",
+          "ring-1 ring-inset ring-[#DFE3FA] dark:ring-[#303559] placeholder:text-slate-400",
+          "focus:ring-1 focus:ring-inset sm:text-sm sm:leading-6",
+          @errors == [] && "focus:ring-[#0C0E16] dark:focus:ring-white",
+          @errors != [] && "focus:ring-rose-400 dark:focus:ring-rose-400"
+        ]}
         multiple={@multiple}
         {@rest}
       >

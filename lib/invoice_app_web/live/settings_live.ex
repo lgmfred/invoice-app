@@ -5,6 +5,7 @@ defmodule InvoiceAppWeb.SettingsLive do
   alias InvoiceApp.Accounts
   alias InvoiceApp.Accounts.BusinessAddress
   alias InvoiceApp.Accounts.EmailPreferences
+  alias InvoiceApp.Accounts.User
   alias InvoiceApp.Repo
   alias InvoiceAppWeb.CustomComponents
   alias Phoenix.LiveView.JS
@@ -22,7 +23,10 @@ defmodule InvoiceAppWeb.SettingsLive do
   @impl Phoenix.LiveView
   def handle_params(%{"tab" => "personal"}, _uri, socket) do
     selected_tab = Enum.find(socket.assigns.tabs, fn {key, _val} -> key == :personal end)
-    changeset = address_changeset(socket)
+
+    changeset =
+      socket.assigns.current_user
+      |> User.update_user_changeset()
 
     {:noreply,
      socket
@@ -79,7 +83,7 @@ defmodule InvoiceAppWeb.SettingsLive do
     ~H"""
     <div class="flex-1 overflow-y-auto">
       <.settings_header tabs={@tabs} selected_tab={@selected_tab} />
-      <.address_form
+      <.edit_profile_form
         :if={@selected_tab == {:personal, "Personal"}}
         uploads={@uploads}
         current_user={@current_user}
@@ -109,8 +113,35 @@ defmodule InvoiceAppWeb.SettingsLive do
   end
 
   @impl Phoenix.LiveView
-  def handle_event("validate", _params, socket) do
+  def handle_event("validate-upload", _params, socket) do
     {:noreply, socket}
+  end
+
+  @impl Phoenix.LiveView
+  def handle_event("validate-profile", %{"user" => params}, socket) do
+    changeset =
+      socket.assigns.current_user
+      |> User.update_user_changeset(params)
+      |> Map.put(:action, :validate)
+
+    {:noreply, assign_form(socket, changeset)}
+  end
+
+  @impl Phoenix.LiveView
+  def handle_event("save-profile", %{"user" => params}, socket) do
+    case Accounts.update_user(socket.assigns.current_user, params) do
+      {:ok, user} ->
+        {:noreply,
+         socket
+         |> assign(:current_user, user)
+         |> put_flash(:info, "Profile updated successfully.")}
+
+      {:error, %Ecto.Changeset{} = changeset} ->
+        {:noreply,
+         socket
+         |> assign_form(changeset)
+         |> put_flash(:error, "An error occurred during profile update.")}
+    end
   end
 
   @impl Phoenix.LiveView
@@ -253,10 +284,10 @@ defmodule InvoiceAppWeb.SettingsLive do
     """
   end
 
-  def address_form(assigns) do
+  def edit_profile_form(assigns) do
     ~H"""
     <div class="flex flex-col gap-4 mx-auto max-w-3xl px-4 py-10 sm:px-6 lg:px-8 lg:py-12 rounded-md bg-white dark:bg-[#1E2139]">
-      <form class="flex flex-col gap-4" id="upload-form" phx-change="validate">
+      <form class="flex flex-col gap-4" id="upload-form" phx-change="validate-upload">
         <%!-- Avatar render and update section --%>
         <.render_avatar current_user={@current_user} />
         <div class="col-span-2 text-[#E86969]">
@@ -297,119 +328,70 @@ defmodule InvoiceAppWeb.SettingsLive do
           </button>
         </div>
       </form>
-      <.form for={@form} class="flex flex-col gap-4">
+      <.form
+        for={@form}
+        phx-change="validate-profile"
+        phx-submit="save-profile"
+        class="flex flex-col gap-4"
+      >
         <h2 class="font-medium text-xl">Edit Profile Information</h2>
         <div class="grid grid-cols-1 gap-y-6 sm:grid-cols-6 sm:gap-x-6">
           <div class="sm:col-span-3">
-            <label
-              for="full-name"
-              class="block text-sm font-medium leading-6 text-[#7E88C3] dark:text-[#DFE3FA]"
-            >
-              Name
-            </label>
-            <input
-              type="text"
-              name="full-name"
-              id="full-name"
-              autocomplete="full-name"
-              class="mt-2 block w-full rounded-md border-0 py-1.5 font-bold dark:bg-[#303559] shadow-sm ring-1 ring-inset ring-[#DFE3FA] dark:ring-[#303559] placeholder:text-slate-400 focus:ring-1 focus:ring-inset focus:ring-[#0C0E16] dark:focus:ring-white sm:text-sm sm:leading-6"
-            />
+            <CustomComponents.input field={@form[:full_name]} type="text" id="full-name" label="Name" />
           </div>
 
           <div class="sm:col-span-3">
-            <label
-              for="username"
-              class="block text-sm font-medium leading-6 text-[#7E88C3] dark:text-[#DFE3FA]"
-            >
-              Username
-            </label>
-            <input
+            <CustomComponents.input
+              field={@form[:username]}
               type="text"
-              name="username"
               id="username"
-              autocomplete="username"
-              class="mt-2 block w-full rounded-md border-0 py-1.5 font-bold dark:bg-[#303559] shadow-sm ring-1 ring-inset ring-[#DFE3FA] dark:ring-[#303559] placeholder:text-slate-400 focus:ring-1 focus:ring-inset focus:ring-[#0C0E16] dark:focus:ring-white sm:text-sm sm:leading-6"
+              label="Username"
             />
           </div>
 
           <div class="sm:col-span-6">
-            <label
-              for="email-address"
-              class="block text-sm font-medium leading-6 text-[#7E88C3] dark:text-[#DFE3FA]"
-            >
-              Email
-            </label>
-            <input
-              type="text"
-              name="email-address"
-              id="email-address"
-              autocomplete="email-address"
-              class="mt-2 block w-full rounded-md border-0 py-1.5 font-bold dark:bg-[#303559] shadow-sm ring-1 ring-inset ring-[#DFE3FA] dark:ring-[#303559] placeholder:text-slate-400 focus:ring-1 focus:ring-inset focus:ring-[#0C0E16] dark:focus:ring-white sm:text-sm sm:leading-6"
-            />
+            <CustomComponents.input field={@form[:email]} type="email" id="email" label="Email" />
           </div>
 
-          <div class="sm:col-span-3">
-            <label
-              for="country"
-              class="block text-sm font-medium leading-6 text-[#7E88C3] dark:text-[#DFE3FA]"
-            >
-              Country
-            </label>
-            <input
-              type="text"
-              name="country"
-              id="country"
-              autocomplete="country-name"
-              class="mt-2 block w-full rounded-md border-0 py-1.5 font-bold dark:bg-[#303559] shadow-sm ring-1 ring-inset ring-[#DFE3FA] dark:ring-[#303559] placeholder:text-slate-400 focus:ring-1 focus:ring-inset focus:ring-[#0C0E16] dark:focus:ring-white sm:text-sm sm:leading-6"
-            />
-          </div>
+          <.inputs_for :let={address} field={@form[:business_address]}>
+            <div class="sm:col-span-3">
+              <CustomComponents.input
+                field={address[:country]}
+                type="select"
+                options={country_options()}
+                id="country"
+                label="Country"
+              />
+            </div>
 
-          <div class="sm:col-span-3">
-            <label
-              for="city"
-              class="block text-sm font-medium leading-6 text-[#7E88C3] dark:text-[#DFE3FA]"
-            >
-              City
-            </label>
-            <input
-              type="text"
-              name="city"
-              id="city"
-              autocomplete="city-name"
-              class="mt-2 block w-full rounded-md border-0 py-1.5 font-bold dark:bg-[#303559] shadow-sm ring-1 ring-inset ring-[#DFE3FA] dark:ring-[#303559] placeholder:text-slate-400 focus:ring-1 focus:ring-inset focus:ring-[#0C0E16] dark:focus:ring-white sm:text-sm sm:leading-6"
-            />
-          </div>
+            <div class="sm:col-span-3">
+              <CustomComponents.input
+                field={address[:city]}
+                type="text"
+                id="city"
+                autocomplete="city-name"
+                label="City"
+              />
+            </div>
 
-          <div class="sm:col-span-3">
-            <label
-              for="street-address"
-              class="block text-sm font-medium leading-6 text-[#7E88C3] dark:text-[#DFE3FA]"
-            >
-              Street Address
-            </label>
-            <input
-              type="text"
-              name="street-address"
-              id="street-address"
-              autocomplete="street-address"
-              class="mt-2 block w-full rounded-md border-0 py-1.5 font-bold dark:bg-[#303559] shadow-sm ring-1 ring-inset ring-[#DFE3FA] dark:ring-[#303559] placeholder:text-slate-400 focus:ring-1 focus:ring-inset focus:ring-[#0C0E16] dark:focus:ring-white sm:text-sm sm:leading-6"
-            />
-          </div>
+            <div class="sm:col-span-3">
+              <CustomComponents.input
+                field={address[:street_address]}
+                type="text"
+                id="street-address"
+                label="Street Address"
+              />
+            </div>
 
-          <div class="sm:col-span-3">
-            <label
-              for="postal-code"
-              class="block text-sm font-medium leading-6 text-[#7E88C3] dark:text-[#DFE3FA]"
-            >
-              Postal Code
-            </label>
-            <input
-              type="text"
-              name="postal-code"
-              id="postal-code"
-              class="mt-2 block w-full rounded-md border-0 py-1.5 font-bold dark:bg-[#303559] shadow-sm ring-1 ring-inset ring-[#DFE3FA] dark:ring-[#303559] placeholder:text-slate-400 focus:ring-1 focus:ring-inset focus:ring-[#0C0E16] dark:focus:ring-white sm:text-sm sm:leading-6"
-            />
-          </div>
+            <div class="sm:col-span-3">
+              <CustomComponents.input
+                field={address[:postal_code]}
+                type="text"
+                id="postal-code"
+                label="Postal Code"
+              />
+            </div>
+          </.inputs_for>
           <.save_delete_buttons />
         </div>
       </.form>
@@ -657,16 +639,6 @@ defmodule InvoiceAppWeb.SettingsLive do
   def error_to_string(:too_large), do: "Too large"
   def error_to_string(:not_accepted), do: "Invalid file type"
   def error_to_string(:too_many_files), do: "Too many files"
-
-  defp address_changeset(socket, params \\ %{}) do
-    if socket.assigns.current_user.business_address do
-      socket.assigns.current_user.business_address
-      |> BusinessAddress.changeset(params)
-    else
-      %BusinessAddress{}
-      |> BusinessAddress.changeset()
-    end
-  end
 
   defp assign_form(socket, %Ecto.Changeset{} = changeset) do
     form = to_form(changeset)

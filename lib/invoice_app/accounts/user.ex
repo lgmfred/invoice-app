@@ -64,9 +64,9 @@ defmodule InvoiceApp.Accounts.User do
   @doc """
   A user changeset for registration.
   """
-  def update_user_changeset(user, attrs, opts \\ []) do
+  def update_user_changeset(user, attrs \\ %{}, opts \\ []) do
     user
-    |> cast(attrs, [:email, :password, :full_name, :username])
+    |> cast(attrs, [:email, :password, :full_name, :username, :avatar_url])
     |> cast_embed(:business_address)
     |> cast_embed(:email_preferences)
     |> validate_email(opts)

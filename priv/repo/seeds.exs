@@ -16,6 +16,7 @@ alias Faker.Lorem
 alias Faker.Person
 alias Faker.Phone.PtPt
 alias InvoiceApp.Accounts.BusinessAddress
+alias InvoiceApp.Accounts.EmailPreferences
 alias InvoiceApp.Accounts.User
 alias InvoiceApp.Invoices.BillFrom
 alias InvoiceApp.Invoices.BillTo
@@ -44,6 +45,7 @@ users =
         postal_code: Address.postcode(),
         phone_number: PtPt.landline_number()
       },
+      email_preferences: %EmailPreferences{},
       avatar_url: "/images/default_avatar.png",
       confirmed_at:
         NaiveDateTime.utc_now()

@@ -70,16 +70,19 @@ defmodule InvoiceAppWeb.CustomComponents do
       end)
 
     ~H"""
-    <div phx-feedback-for={@name}>
-      <label class="flex items-center gap-4 text-sm leading-6 text-[#7E88C3] dark:text-[#DFE3FA]">
+    <div phx-feedback-for={@name} class="font-medium">
+      <label class="flex items-center gap-4 text-sm leading-6">
         <input type="hidden" name={@name} value="false" />
         <input
           type="checkbox"
           id={@id}
           name={@name}
           value="true"
+          class={[
+            "h-4 w-4 bg-[#DFE3FA] dark:bg-[#303559] border-gray-300 text-[#0C0E16] dark:text-[#7C5DFA]",
+            "border-gray-300 text-[#0C0E16] dark:text-[#7C5DFA] focus:ring-1 focus:ring-gray-300 dark:focus:ring-[#303559]"
+          ]}
           checked={@checked}
-          class="mt-2 block w-full rounded-md border-0 py-1.5 font-bold dark:bg-[#303559] shadow-sm ring-1 ring-inset ring-[#DFE3FA] dark:ring-[#303559] placeholder:text-slate-400 focus:ring-1 focus:ring-inset focus:ring-[#0C0E16] dark:focus:ring-white sm:text-sm sm:leading-6"
           {@rest}
         />
         <%= @label %>

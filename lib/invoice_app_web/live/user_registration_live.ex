@@ -2,6 +2,7 @@ defmodule InvoiceAppWeb.UserRegistrationLive do
   use InvoiceAppWeb, :live_view
 
   alias InvoiceApp.Accounts
+  alias InvoiceApp.Accounts.EmailPreferences
   alias InvoiceApp.Accounts.User
 
   @impl Phoenix.LiveView
@@ -124,7 +125,9 @@ defmodule InvoiceAppWeb.UserRegistrationLive do
 
   @impl Phoenix.LiveView
   def mount(_params, _session, socket) do
-    changeset = Accounts.change_user_registration(%User{})
+    changeset =
+      %User{email_preferences: %EmailPreferences{}}
+      |> Accounts.change_user_registration()
 
     socket =
       socket
@@ -153,7 +156,9 @@ defmodule InvoiceAppWeb.UserRegistrationLive do
 
   @impl Phoenix.LiveView
   def handle_event("validate", %{"user" => user_params}, socket) do
-    changeset = Accounts.change_user_registration(%User{}, user_params)
+    changeset =
+      %User{email_preferences: %EmailPreferences{}}
+      |> Accounts.change_user_registration(user_params)
 
     error_details = error_details(changeset)
     socket = assign(socket, :error_details, error_details)

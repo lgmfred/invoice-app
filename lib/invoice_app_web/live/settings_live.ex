@@ -4,6 +4,7 @@ defmodule InvoiceAppWeb.SettingsLive do
 
   alias InvoiceApp.Accounts
   alias InvoiceApp.Accounts.BusinessAddress
+  alias InvoiceApp.Accounts.EmailPreferences
   alias InvoiceApp.Repo
   alias InvoiceAppWeb.CustomComponents
   alias Phoenix.LiveView.JS
@@ -55,11 +56,17 @@ defmodule InvoiceAppWeb.SettingsLive do
   @impl Phoenix.LiveView
   def handle_params(%{"tab" => "email"}, _uri, socket) do
     selected_tab = Enum.find(socket.assigns.tabs, fn {key, _val} -> key == :email end)
+    user = socket.assigns.current_user
+
+    changeset =
+      user.email_preferences
+      |> EmailPreferences.changeset()
 
     {:noreply,
      socket
      |> assign(:page_title, "Settings - Email notifications")
-     |> assign(:selected_tab, selected_tab)}
+     |> assign(:selected_tab, selected_tab)
+     |> assign_form(changeset)}
   end
 
   @impl Phoenix.LiveView
@@ -94,6 +101,7 @@ defmodule InvoiceAppWeb.SettingsLive do
         current_user={@current_user}
         tabs={@tabs}
         selected_tab={@selected_tab}
+        form={@form}
       />
       <.delete_account_modal current_user={@current_user} delete_account?={@delete_account?} />
     </div>
@@ -147,6 +155,27 @@ defmodule InvoiceAppWeb.SettingsLive do
 
       _any ->
         {:noreply, assign(socket, :delete_account?, false)}
+    end
+  end
+
+  def handle_event("save-preferences", %{"email_preferences" => _pref} = params, socket) do
+    case Accounts.update_user(socket.assigns.current_user, params) do
+      {:ok, user} ->
+        {:noreply,
+         socket
+         |> assign(:current_user, user)
+         |> put_flash(:info, "Notification preferences updated successfully.")}
+
+      {:error, _changeset} ->
+        changeset =
+          socket.assigns.current_user.email_preferences
+          |> EmailPreferences.changeset(params)
+          |> Map.put(:action, :validate)
+
+        {:noreply,
+         socket
+         |> assign_form(changeset)
+         |> put_flash(:error, "Could not update notification preferences.")}
     end
   end
 
@@ -466,7 +495,7 @@ defmodule InvoiceAppWeb.SettingsLive do
   def email_notifications(assigns) do
     ~H"""
     <div class="mx-auto max-w-3xl px-4 py-10 sm:px-6 lg:px-8 lg:py-12 rounded-md bg-white dark:bg-[#1E2139]">
-      <form class="flex flex-col gap-4">
+      <.form for={@form} phx-submit="save-preferences" class="flex flex-col gap-4">
         <%!-- Avatar render and update section --%>
         <.render_avatar current_user={@current_user} />
         <h2 class="font-medium text-xl">Edit Notification Preferences</h2>
@@ -475,57 +504,27 @@ defmodule InvoiceAppWeb.SettingsLive do
             <legend class="font-medium">I’d like to receive:</legend>
             <br />
             <div class="space-y-5">
-              <div class="relative flex items-start">
-                <div class="flex h-6 items-center">
-                  <input
-                    id="newsletter"
-                    name="newsletter"
-                    type="checkbox"
-                    class="h-4 w-4 bg-[#DFE3FA] dark:bg-[#303559] border-gray-300 text-[#0C0E16] dark:text-[#7C5DFA] focus:ring-1 focus:ring-gray-300 dark:focus:ring-[#303559]"
-                  />
-                </div>
-                <div class="ml-3 text-sm leading-6">
-                  <label for="newsletter" class="font-medium">
-                    Newsletter and product updates
-                  </label>
-                </div>
-              </div>
-              <div class="relative flex items-start">
-                <div class="flex h-6 items-center">
-                  <input
-                    id="sign-in-notification"
-                    name="sign-in-notification"
-                    type="checkbox"
-                    class="h-4 w-4 bg-[#DFE3FA] dark:bg-[#303559] border-gray-300 text-[#0C0E16] dark:text-[#7C5DFA] focus:ring-1 focus:ring-gray-300 dark:focus:ring-[#303559]"
-                  />
-                </div>
-                <div class="ml-3 text-sm leading-6">
-                  <label for="sign-in-notification" class="font-medium">
-                    Sign in notification
-                  </label>
-                </div>
-              </div>
-              <div class="relative flex items-start">
-                <div class="flex h-6 items-center">
-                  <input
-                    id="due-payment"
-                    name="due-payment"
-                    type="checkbox"
-                    class="h-4 w-4 bg-[#DFE3FA] dark:bg-[#303559] border-gray-300 text-[#0C0E16] dark:text-[#7C5DFA] focus:ring-1 focus:ring-gray-300 dark:focus:ring-[#303559]"
-                  />
-                </div>
-                <div class="ml-3 text-sm leading-6">
-                  <label for="due-payment" class="font-medium">
-                    Due payment reminders
-                  </label>
-                </div>
-              </div>
+              <CustomComponents.input
+                field={@form[:newsletter]}
+                type="checkbox"
+                label="Newsletter and product updates"
+              />
+              <CustomComponents.input
+                field={@form[:sign_in]}
+                type="checkbox"
+                label="Sign in notification"
+              />
+              <CustomComponents.input
+                field={@form[:payment_reminder]}
+                type="checkbox"
+                label="Due payment reminders"
+              />
             </div>
           </fieldset>
 
           <.save_delete_buttons />
         </div>
-      </form>
+      </.form>
     </div>
     """
   end

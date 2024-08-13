@@ -1,8 +1,12 @@
 defmodule InvoiceApp.Accounts.User do
   @moduledoc false
-
   use Ecto.Schema
+
   import Ecto.Changeset
+
+  alias InvoiceApp.Accounts.BusinessAddress
+  alias InvoiceApp.Accounts.EmailPreferences
+  alias InvoiceApp.Invoices.Invoice
 
   schema "users" do
     field :full_name, :string
@@ -12,8 +16,9 @@ defmodule InvoiceApp.Accounts.User do
     field :password, :string, virtual: true, redact: true
     field :hashed_password, :string, redact: true
     field :confirmed_at, :naive_datetime
-    embeds_one :business_address, InvoiceApp.Accounts.BusinessAddress, on_replace: :update
-    has_many :invoices, InvoiceApp.Invoices.Invoice, on_delete: :delete_all
+    embeds_one :email_preferences, EmailPreferences, on_replace: :update
+    embeds_one :business_address, BusinessAddress, on_replace: :update
+    has_many :invoices, Invoice, on_delete: :delete_all
 
     timestamps(type: :utc_datetime)
   end
@@ -45,6 +50,7 @@ defmodule InvoiceApp.Accounts.User do
     user
     |> cast(attrs, [:email, :password, :full_name, :username, :avatar_url])
     |> cast_embed(:business_address)
+    |> cast_embed(:email_preferences)
     |> validate_email(opts)
     |> validate_password(opts)
     |> validate_username(opts)
@@ -60,8 +66,9 @@ defmodule InvoiceApp.Accounts.User do
   """
   def update_user_changeset(user, attrs, opts \\ []) do
     user
-    |> cast(attrs, [:email, :password, :full_name, :username, :avatar_url])
+    |> cast(attrs, [:email, :password, :full_name, :username])
     |> cast_embed(:business_address)
+    |> cast_embed(:email_preferences)
     |> validate_email(opts)
     |> validate_username(opts)
     |> validate_required([:full_name])

@@ -138,8 +138,16 @@ defmodule InvoiceAppWeb.UserRegistrationLive do
   end
 
   @impl Phoenix.LiveView
-  def handle_event("save", %{"user" => user_params}, socket) do
-    case Accounts.register_user(user_params) do
+  def handle_event("save", %{"user" => params}, socket) do
+    params =
+      params
+      |> Map.put_new("email_preferences", %{
+        "newsletter" => true,
+        "sign_in" => true,
+        "payment_reminder" => true
+      })
+
+    case Accounts.register_user(params) do
       {:ok, user} ->
         {:ok, _} =
           Accounts.deliver_user_confirmation_instructions(

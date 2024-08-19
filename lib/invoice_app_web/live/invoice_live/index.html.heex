@@ -126,7 +126,12 @@
     </.link>
   </div>
 </div>
-<.modal :if={@live_action == :new} id="invoice-modal" show on_cancel={JS.patch(~p"/invoices")}>
+<CustomComponents.modal
+  :if={@live_action == :new}
+  id="invoice-modal"
+  show
+  on_cancel={JS.patch(~p"/invoices")}
+>
   <.live_component
     module={InvoiceAppWeb.InvoiceLive.FormComponent}
     id={@invoice.id || :new}
@@ -137,4 +142,4 @@
     form={@form}
     patch={~p"/invoices"}
   />
-</.modal>
+</CustomComponents.modal>

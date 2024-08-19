@@ -3,7 +3,6 @@ defmodule InvoiceAppWeb.SettingsLive do
   use InvoiceAppWeb, :live_view
 
   alias InvoiceApp.Accounts
-  alias InvoiceApp.Accounts.BusinessAddress
   alias InvoiceApp.Accounts.EmailPreferences
   alias InvoiceApp.Accounts.User
   alias InvoiceApp.Repo

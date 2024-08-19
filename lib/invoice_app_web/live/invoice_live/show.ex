@@ -2,6 +2,7 @@ defmodule InvoiceAppWeb.InvoiceLive.Show do
   use InvoiceAppWeb, :live_view
 
   alias InvoiceApp.Invoices
+  alias InvoiceAppWeb.CustomComponents
   alias InvoiceAppWeb.InvoiceLive.Index
   alias InvoiceAppWeb.InvoiceLive.InvoiceForm
 

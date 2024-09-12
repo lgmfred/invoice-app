@@ -10,7 +10,7 @@ defmodule InvoiceApp.Accounts.UserNotifier do
     email =
       new()
       |> to(recipient)
-      |> from({"InvoiceApp", "contact@example.com"})
+      |> from({"InvoiceApp", "contact@invoice-app.ayikoyo.com"})
       |> subject(subject)
       |> text_body(body)
 

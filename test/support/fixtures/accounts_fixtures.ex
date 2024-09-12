@@ -19,7 +19,7 @@ defmodule InvoiceApp.AccountsFixtures do
       city: Address.city(),
       street_address: Address.street_address(true),
       postal_code: Address.postcode(),
-      phone_number: "0#{PtPt.number()}"
+      phone_number: PtPt.landline_number()
     })
   end
 
@@ -29,6 +29,7 @@ defmodule InvoiceApp.AccountsFixtures do
       password: valid_user_password(),
       full_name: Fr.name(),
       username: unique_username(),
+      email_preferences: %{newsletter: true, payment_reminder: true, sign_in: true},
       terms_agreed?: true
     })
   end

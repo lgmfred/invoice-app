@@ -4,6 +4,7 @@ defmodule InvoiceAppWeb.UserRegistrationLive do
   alias InvoiceApp.Accounts
   alias InvoiceApp.Accounts.EmailPreferences
   alias InvoiceApp.Accounts.User
+  alias InvoiceAppWeb.CustomComponents
 
   @impl Phoenix.LiveView
   def render(assigns) do
@@ -68,6 +69,14 @@ defmodule InvoiceAppWeb.UserRegistrationLive do
           required
         />
         <.input field={@form[:avatar_url]} type="hidden" />
+
+        <div class="hidden">
+          <.inputs_for :let={pref} field={@form[:email_preferences]}>
+            <CustomComponents.input field={pref[:newsletter]} type="checkbox" />
+            <CustomComponents.input field={pref[:sign_in]} type="checkbox" />
+            <CustomComponents.input field={pref[:payment_reminder]} type="checkbox" />
+          </.inputs_for>
+        </div>
 
         <div>
           <%= inspect(@error_details) %>

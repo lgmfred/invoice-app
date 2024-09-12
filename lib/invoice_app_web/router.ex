@@ -90,7 +90,6 @@ defmodule InvoiceAppWeb.Router do
         {InvoiceAppWeb.UserAuth, :ensure_updated_address},
         {InvoiceAppWeb.UserAuth, :ensure_uploaded_avatar}
       ] do
-      # live "/invoices", InvoicesLive
       live "/settings", SettingsLive
 
       live "/invoices", InvoiceLive.Index, :index

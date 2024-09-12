@@ -19,7 +19,9 @@ defmodule InvoiceApp.Invoices do
 
   """
   def list_invoices do
-    Repo.all(Invoice)
+    Invoice
+    |> Repo.all()
+    |> Repo.preload(:user)
   end
 
   @doc """
@@ -34,6 +36,7 @@ defmodule InvoiceApp.Invoices do
     |> filter_by_user_id(filter)
     |> filter_by_status(filter)
     |> Repo.all()
+    |> Repo.preload(:user)
   end
 
   defp filter_by_user_id(query, %{user_id: ""}), do: query
@@ -62,7 +65,12 @@ defmodule InvoiceApp.Invoices do
       ** (Ecto.NoResultsError)
 
   """
-  def get_invoice!(id), do: Repo.get!(Invoice, id)
+  def get_invoice!(id) do
+    Invoice
+    |> where([i], i.id == ^id)
+    |> preload(:user)
+    |> Repo.one!()
+  end
 
   @doc """
   Creates a invoice for the give user.

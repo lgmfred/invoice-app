@@ -45,9 +45,9 @@ defmodule InvoiceAppWeb.InvoiceLive.Show do
     assign(socket, :form, to_form(changeset))
   end
 
-  def due_date(date, days) do
-    date
-    |> Date.add(days)
+  def due_date(invoice) do
+    invoice.date
+    |> Date.add(invoice.payment_term)
     |> Calendar.strftime("%d %b %Y")
   end
 

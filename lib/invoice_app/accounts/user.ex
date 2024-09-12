@@ -145,20 +145,9 @@ defmodule InvoiceApp.Accounts.User do
   It requires the full name to change otherwise an error is added.
   """
   def full_name_changeset(user, attrs) do
-    full_name = user.full_name
-
-    case attrs do
-      %{full_name: ^full_name} ->
-        user
-        |> cast(attrs, [:full_name])
-        |> validate_required(:full_name)
-        |> add_error(:full_name, "did not change")
-
-      %{} ->
-        user
-        |> cast(attrs, [:full_name])
-        |> validate_required(:full_name)
-    end
+    user
+    |> cast(attrs, [:full_name])
+    |> validate_required(:full_name)
   end
 
   @doc """

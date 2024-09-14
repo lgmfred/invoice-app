@@ -1,6 +1,6 @@
 # InvoiceApp
 
-![Elixir CI](https://github.com/lgmfred/invoice-app/actions/workflows/ci.yaml/badge.svg)
+![Elixir CI](https://github.com/lgmfred/invoice-app/actions/workflows/main.yml/badge.svg)
 
 To start your Phoenix server:
 

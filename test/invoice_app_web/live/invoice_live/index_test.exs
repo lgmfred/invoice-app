@@ -1,6 +1,9 @@
 defmodule InvoiceAppWeb.InvoiceLive.IndexTest do
   use InvoiceAppWeb.ConnCase
 
+  alias Faker.Address
+  alias Faker.Internet
+  alias Faker.Person
   alias InvoiceAppWeb.InvoiceLive.Index
   alias InvoiceAppWeb.InvoiceLive.Show
 
@@ -102,6 +105,68 @@ defmodule InvoiceAppWeb.InvoiceLive.IndexTest do
       assert html =~ invoice3.bill_to.name
       refute html =~ invoice1.bill_to.name
       refute html =~ invoice2.bill_to.name
+    end
+  end
+
+  describe "/invoices/new" do
+    @valid_attrs %{
+      bill_from: %{
+        city: Address.city(),
+        country: Address.country_code(),
+        post_code: Address.postcode(),
+        street_address: Address.street_address()
+      },
+      bill_to: %{
+        city: Address.city(),
+        name: Person.name(),
+        country: Address.country_code(),
+        email: Internet.email(),
+        post_code: Address.postcode(),
+        street_address: Address.street_address()
+      },
+      date: Date.utc_today(),
+      items: %{
+        "0" => %{
+          name: "new item name",
+          quantity: 4,
+          price: 9.5,
+          total: 4 * 9.5
+        }
+      },
+      payment_term: 14,
+      project_description: "new project description"
+    }
+    @invalid_attrs %{}
+
+    test "renders new invoice page", %{conn: conn} do
+      {:ok, _view, html} = live(conn, ~p"/invoices/new")
+
+      assert html =~ "New Invoice"
+      assert html =~ "Bill From"
+      assert html =~ "Bill To"
+    end
+
+    test "invalid attrs render serrors", %{conn: conn} do
+      {:ok, view, _html} = live(conn, ~p"/invoices/new")
+
+      view
+      |> form("#invoice-form", %{"invoice_form" => @invalid_attrs})
+      |> render_submit()
+
+      assert render(view) =~ "can&#39;t be blank"
+    end
+
+    test "valid attrs creates new invoice", %{conn: conn} do
+      {:ok, view, _html} = live(conn, ~p"/invoices/new")
+
+      view
+      |> form("#invoice-form", %{"invoice_form" => @valid_attrs})
+      |> render_submit()
+
+      {path, %{"info" => info}} = assert_redirect(view)
+
+      assert path == ~p"/invoices"
+      assert info == "Invoice created successfully"
     end
   end
 

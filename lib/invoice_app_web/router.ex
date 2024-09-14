@@ -94,10 +94,9 @@ defmodule InvoiceAppWeb.Router do
 
       live "/invoices", InvoiceLive.Index, :index
       live "/invoices/new", InvoiceLive.Index, :new
-      live "/invoices/:id/edit", InvoiceLive.Index, :edit
 
       live "/invoices/:id", InvoiceLive.Show, :show
-      live "/invoices/:id/show/edit", InvoiceLive.Show, :edit
+      live "/invoices/:id/edit", InvoiceLive.Show, :edit
     end
   end
 

@@ -196,6 +196,7 @@ defmodule InvoiceAppWeb.InvoiceLive.FormComponent do
 
             <.link
               :if={@action == :edit}
+              data-role="cancel-edit"
               navigate={@patch}
               class="rounded-full bg-[#F9FAFE] dark:bg-[#252945] px-4 py-2.5 text-sm font-semibold text-[#7E88C3]
                 dark:text-[#DFE3FA] shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2
@@ -205,6 +206,7 @@ defmodule InvoiceAppWeb.InvoiceLive.FormComponent do
             </.link>
 
             <button
+              data-role="save-invoice"
               type="submit"
               name="save-as"
               value="regular"
@@ -248,7 +250,7 @@ defmodule InvoiceAppWeb.InvoiceLive.FormComponent do
       {:noreply,
        socket
        |> put_flash(:info, "Invoice updated successfully")
-       |> push_patch(to: socket.assigns.patch)}
+       |> push_navigate(to: socket.assigns.patch)}
     else
       {:error, %Ecto.Changeset{} = _changeset} ->
         changeset = InvoiceForm.validate(socket.assigns.form, params)
@@ -272,7 +274,7 @@ defmodule InvoiceAppWeb.InvoiceLive.FormComponent do
       {:noreply,
        socket
        |> put_flash(:info, "Invoice created successfully")
-       |> push_patch(to: socket.assigns.patch)}
+       |> push_navigate(to: socket.assigns.patch)}
     else
       {:error, %Ecto.Changeset{} = _changeset} ->
         changeset = InvoiceForm.validate(socket.assigns.form, params)
@@ -282,6 +284,10 @@ defmodule InvoiceAppWeb.InvoiceLive.FormComponent do
          |> put_flash(:error, "Invalid data!")
          |> assign_form(changeset)}
     end
+  end
+
+  defp save_invoice(socket, :new, %{"invoice_form" => params}) do
+    save_invoice(socket, :new, %{"save-as" => "regular", "invoice_form" => params})
   end
 
   defp assign_form(socket, %Ecto.Changeset{} = changeset) do

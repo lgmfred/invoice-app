@@ -19,7 +19,7 @@ defmodule InvoiceAppWeb.AddBusinessAddressLive do
   def render(assigns) do
     ~H"""
     <div class="h-screen lg:mx-6 flex flex-col place-content-center gap-6 lg:gap-4">
-      <.link
+      <%!-- <.link
         data-role="avatar-update-link"
         navigate={~p"/users/add_avatar"}
         class="hidden lg:flex items-center justify-start gap-1 my-0 font-medium text-lg text-[#7C5DFA]"
@@ -31,7 +31,7 @@ defmodule InvoiceAppWeb.AddBusinessAddressLive do
           />
         </svg>
         <div>Back</div>
-      </.link>
+      </.link> --%>
 
       <div class="lg:mx-16 flex flex-col gap-4">
         <div class="hidden h-20 lg:flex gap-4 items-center justify-center">

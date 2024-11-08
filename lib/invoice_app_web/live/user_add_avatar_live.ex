@@ -121,7 +121,7 @@ defmodule InvoiceAppWeb.UserAddAvatarLive do
   def handle_event("upload", _params, socket) do
     case consume_uploads(socket) do
       [] ->
-        {:noreply, push_navigate(socket, to: ~p"/users/add_address")}
+        {:noreply, push_navigate(socket, to: ~p"/invoices")}
 
       [avatar_url | _] ->
         update_user(socket, avatar_url)
@@ -155,7 +155,7 @@ defmodule InvoiceAppWeb.UserAddAvatarLive do
         {:noreply,
          socket
          |> assign(:current_user, user)
-         |> push_navigate(to: ~p"/users/add_address")}
+         |> push_navigate(to: ~p"/invoices")}
 
       {:error, %Ecto.Changeset{} = _changeset} ->
         {:noreply, socket}
